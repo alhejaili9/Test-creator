@@ -330,7 +330,7 @@
         const id = 'q' + qCount;
         const html = `<table class="questions-table" id="${id}">
             <tr><td rowspan="2" class="q-num">${toArabic(qCount)}</td>
-            <td colspan="8" class="q-head"><div id="${id}-text" contenteditable="true" onfocus="lastFocusedQuestionId='${id}'">اكتب السؤال هنا...</div></td>
+            <td colspan="8" class="q-head"><div id="${id}-text" contenteditable="true" onfocus="setLastFocusedQuestion('${id}')">اكتب السؤال هنا...</div></td>
             <td rowspan="2" style="width:30px; border:none; text-align:center;"><button class="btn-del" onclick="removeQuestion('${id}')">✖</button></td></tr>
             <tr><td class="opt-char">أ</td><td class="opt-val" contenteditable="true"></td><td class="opt-char">ب</td><td class="opt-val" contenteditable="true"></td><td class="opt-char">ج</td><td class="opt-val" contenteditable="true"></td><td class="opt-char">د</td><td class="opt-val" contenteditable="true"></td></tr></table>`;
         container.insertAdjacentHTML('beforeend', html);
@@ -422,23 +422,48 @@
         }
     }
 
+    // وظيفة تحديد السؤال الحالي
+    function setLastFocusedQuestion(qId) {
+        lastFocusedQuestionId = qId;
+        console.log('تم تحديد السؤال:', qId);
+    }
+
     // وظائف الصور
     function addImageToQuestion() {
+        console.log('زر الصورة تم الضغط عليه');
+        console.log('السؤال الحالي:', lastFocusedQuestionId);
+        
         if (!lastFocusedQuestionId) {
             alert('الرجاء النقر على السؤال المراد إضافة صورة له أولاً');
             return;
         }
-        document.getElementById('hiddenImgInput').click();
+        
+        const fileInput = document.getElementById('hiddenImgInput');
+        console.log('محاولة فتح محدد الملفات');
+        fileInput.click();
     }
 
     function processImage(event) {
+        console.log('تم اختيار ملف');
         const file = event.target.files[0];
-        if (!file) return;
+        if (!file) {
+            console.log('لا يوجد ملف');
+            return;
+        }
+        
+        console.log('نوع الملف:', file.type);
+        console.log('حجم الملف:', file.size);
         
         const reader = new FileReader();
         reader.onload = function(e) {
+            console.log('تم قراءة الملف بنجاح');
             if (lastFocusedQuestionId) {
                 const qText = document.getElementById(`${lastFocusedQuestionId}-text`);
+                if (!qText) {
+                    console.log('لم يتم العثور على السؤال');
+                    return;
+                }
+                
                 const imgId = 'img_' + Date.now();
                 const imgHtml = `
                     <div style="margin: 10px 0; text-align: center;">
@@ -457,6 +482,7 @@
                     </div>
                 `;
                 qText.innerHTML += imgHtml;
+                console.log('تم إضافة الصورة للسؤال');
             }
         };
         reader.readAsDataURL(file);
