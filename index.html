@@ -2,14 +2,14 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>منشئ الاختبارات المطور - مدارس العقيق</title>
+    <title>منشئ الاختبارات - أ. عبدالرحمن الحجيلي</title>
     <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
     <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Tajawal:wght@400;700&display=swap');
 
-        :root { --base-font-size: 18px; --a4-height: 297mm; }
+        :root { --base-font-size: 18px; }
         * { box-sizing: border-box; font-feature-settings: "ss01" on; }
 
         body {
@@ -23,9 +23,9 @@
         .paper {
             background-color: white;
             width: 210mm;
-            height: var(--a4-height);
+            height: 297mm;
             padding: 12mm 15mm;
-            margin-bottom: 25px;
+            margin-bottom: 30px;
             box-shadow: 0 0 15px rgba(0,0,0,0.5);
             position: relative;
             border: 4px double #000;
@@ -38,8 +38,8 @@
         .header-table { width: 100%; border-collapse: collapse; margin-bottom: 8px; }
         .header-table td { border: 1px solid #000; padding: 4px; text-align: center; font-size: 0.85em; vertical-align: middle; }
         
-        .logo-box { display: flex; justify-content: center; gap: 10px; align-items: center; }
-        .logo-box img { max-width: 60px; max-height: 60px; object-fit: contain; }
+        .logo-box { display: flex; justify-content: center; gap: 8px; }
+        .logo-box img { max-width: 65px; max-height: 65px; object-fit: contain; }
 
         .student-info-container {
             border: 2px solid #000; margin-bottom: 10px; display: flex; width: 100%; background: #fff;
@@ -54,79 +54,104 @@
         .opt-char { width: 35px; text-align: center; background: #eee; font-weight: bold; }
         .opt-val { width: 22%; text-align: center; }
 
-        .image-draggable-wrapper {
-            position: absolute; cursor: move; border: 1px dashed #ccc; 
-            display: inline-block; overflow: hidden; resize: both; z-index: 10;
-        }
-
         .footer-line { 
             margin-top: auto; border-top: 2px solid #000; padding-top: 8px; 
             font-weight: bold; font-size: 0.9em; display: flex; justify-content: space-between;
         }
 
-        /* لوحة التحكم */
+        /* لوحة التحكم الجانبية (يسار) */
         .sidebar {
             position: fixed; left: 10px; top: 10px; background: #fff; padding: 15px; border-radius: 12px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.3); width: 250px; z-index: 1000; display: flex; flex-direction: column; gap: 8px;
-            transition: transform 0.3s ease;
+            box-shadow: 0 4px 25px rgba(0,0,0,0.3); width: 260px; z-index: 1000; display: flex; flex-direction: column; gap: 8px;
+            transition: transform 0.4s ease, opacity 0.3s;
         }
-        .sidebar.hidden { transform: translateX(300px); }
+        .sidebar.hidden { transform: translateX(-300px); opacity: 0; pointer-events: none; }
 
-        .show-sidebar-btn {
-            position: fixed; left: 10px; top: 10px; z-index: 999; padding: 8px;
-            background: #2c3e50; color: white; border: none; border-radius: 5px; cursor: pointer; display: none;
+        .toggle-btn {
+            position: fixed; left: 10px; top: 10px; z-index: 1001; padding: 10px;
+            background: #2c3e50; color: white; border: none; border-radius: 8px; cursor: pointer; font-family: 'Tajawal';
         }
 
         .sidebar label { font-size: 11px; font-weight: bold; color: #34495e; }
-        .sidebar input, .sidebar select { padding: 5px; border: 1px solid #ddd; border-radius: 6px; font-family: 'Tajawal'; }
-        button { cursor: pointer; padding: 8px; border: none; border-radius: 6px; font-weight: bold; color: #fff; font-family: 'Tajawal'; }
+        .sidebar select, .sidebar input { padding: 6px; border: 1px solid #ddd; border-radius: 6px; font-family: 'Tajawal'; }
         
-        .btn-add { background: #27ae60; } .btn-math { background: #8e44ad; } .btn-print { background: #2980b9; } .btn-page { background: #6c5ce7; }
-        .btn-hide { background: #7f8c8d; font-size: 10px; padding: 4px; }
-        .btn-del { background: #e74c3c; padding: 2px 8px; font-size: 12px; }
+        button.action-btn { cursor: pointer; padding: 10px; border: none; border-radius: 6px; font-weight: bold; color: #fff; font-family: 'Tajawal'; transition: 0.2s; width: 100%; margin-top: 5px; }
+        .btn-add { background: #27ae60; } 
+        .btn-page { background: #8e44ad; } 
+        .btn-math { background: #6c5ce7; }
+        .btn-print { background: #2980b9; }
+        .btn-del { background: #e74c3c; padding: 2px 8px; font-size: 12px; width: auto; }
 
-        .user-credit { margin-top: 10px; padding-top: 10px; border-top: 1px solid #eee; text-align: center; font-size: 13px; color: #2c3e50; font-weight: bold; }
+        .user-credit {
+            margin-top: 10px; padding-top: 10px; border-top: 1px solid #eee;
+            text-align: center; font-size: 13px; color: #2c3e50; font-weight: bold;
+        }
 
         /* محرر المعادلات */
         .modal { display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); }
-        .modal-content { background: #fff; margin: 2% auto; padding: 20px; width: 90%; max-width: 700px; border-radius: 10px; direction: rtl; }
-        .math-btn { 
-            padding: 8px; font-size: 18px; cursor: pointer; background:#fff; border:2px solid #8e44ad; border-radius: 6px;
-            color: #8e44ad; font-weight: bold; margin: 4px; min-width: 45px;
-        }
-        #math-preview { border: 2px solid #8e44ad; padding: 15px; min-height: 80px; margin: 10px 0; background:#fcfaff; text-align: center; font-size: 24px; }
-        #math-input { width: 100%; height: 70px; direction: ltr; padding: 10px; }
+        .modal-content { background: #fff; margin: 5% auto; padding: 20px; width: 90%; max-width: 700px; border-radius: 10px; direction: rtl; }
+        .math-btn { padding: 8px; font-size: 20px; cursor: pointer; background:#fff; border:2px solid #8e44ad; border-radius: 8px; color: #8e44ad; font-weight: bold; margin: 4px; min-width: 50px; }
+        #math-preview { border: 2px solid #8e44ad; padding: 15px; min-height: 80px; margin: 10px 0; text-align: center; font-size: 24px; background: #fcfaff; }
+        #math-input { width: 100%; height: 80px; direction: ltr; padding: 10px; border: 1px solid #ccc; }
 
         @media print {
-            @page { margin: 0; size: A4; }
+            @page { margin: 0; size: A4 portrait; }
             body { margin: 0; padding: 0; background: none !important; }
-            .sidebar, .btn-del, .image-draggable-wrapper, .user-credit, .show-sidebar-btn { display: none !important; }
-            .paper { margin: 0 !important; border: 4px double #000 !important; box-shadow: none !important; width: 210mm !important; height: 297mm !important; padding: 12mm 15mm !important; page-break-after: always; }
+            .sidebar, .btn-del, .toggle-btn, .user-credit { display: none !important; }
+            .paper { margin: 0 !important; border: 4px double #000 !important; box-shadow: none !important; width: 210mm !important; height: 297mm !important; padding: 12mm 15mm !important; page-break-after: always !important; }
         }
     </style>
 </head>
 <body>
 
-<button class="show-sidebar-btn" id="showBtn" onclick="toggleSidebar()">👁️ إظهار لوحة التحكم</button>
+<button class="toggle-btn" id="toggleBtn" onclick="toggleSidebar()">👁️ إظهار/إخفاء اللوحة</button>
 
-<div class="sidebar" id="mainSidebar">
-    <button class="btn-hide" onclick="toggleSidebar()">✖ إخفاء اللوحة</button>
-    <h3 style="margin:5px 0; text-align:center; font-size:14px;">لوحة تحكم الاختبار</h3>
+<div class="sidebar" id="sidebar">
+    <h3 style="margin:25px 0 10px 0; text-align:center; font-size:15px; color:#2c3e50;">لوحة تحكم الاختبار</h3>
     
-    <label>حجم الخط:</label><input type="range" min="14" max="24" value="18" oninput="changeFontSize(this.value)">
-    <label>الصف:</label><input type="text" id="inputGrade" value="الثاني المتوسط" oninput="syncFields()">
-    
+    <label>حجم الخط:</label>
+    <input type="range" min="14" max="24" value="18" oninput="changeFontSize(this.value)">
+
+    <label>الصف:</label>
+    <input type="text" id="inputGrade" value="الثاني المتوسط" oninput="syncFields()">
+
     <label>التاريخ الهجري:</label>
-    <div style="display:flex; gap:3px;"><select id="hDay" onchange="syncFields()"></select><select id="hMonth" onchange="syncFields()"></select><select id="hYear" onchange="syncFields()"></select></div>
+    <div style="display:flex; gap:3px;">
+        <select id="hDay" onchange="syncFields()"></select>
+        <select id="hMonth" onchange="syncFields()"></select>
+        <select id="hYear" onchange="syncFields()"></select>
+    </div>
+
+    <label>الزمن (دقائق):</label>
+    <select id="inputDuration" onchange="syncFields()"></select>
     
-    <label>الزمن:</label><select id="inputDuration" onchange="syncFields()"></select>
-    
-    <button class="btn-add" onclick="addNewQuestion()">➕ إضافة سؤال جديد</button>
-    <button class="btn-page" onclick="createNewPageManual()">📄 إضافة صفحة جديدة</button>
-    <button class="btn-math" onclick="openMathModal()">➕ رموز رياضية (أرجواني)</button>
-    <button class="btn-print" onclick="window.print()">🖨️ طباعة الاختبار</button>
+    <button class="action-btn btn-add" onclick="addNewQuestion()">➕ إضافة سؤال جديد</button>
+    <button class="action-btn btn-page" onclick="createNewPageManual()">📄 إضافة صفحة جديدة</button>
+    <button class="action-btn btn-math" onclick="openMathModal()">➕ رموز رياضية (أرجواني)</button>
+    <button class="action-btn btn-print" onclick="window.print()">🖨️ طباعة الاختبار</button>
     
     <div class="user-credit">إعداد أ/ عبدالرحمن سعد الحجيلي</div>
+</div>
+
+<div id="mathModal" class="modal">
+    <div class="modal-content">
+        <h3 style="text-align: center; color: #8e44ad;">محرر المعادلات الرياضية</h3>
+        <div style="direction: ltr; display: flex; flex-wrap: wrap; justify-content: center;">
+            <button class="math-btn" onclick="insertMath('\\frac{}{}')">a/b</button>
+            <button class="math-btn" onclick="insertMath('\\sqrt{}')">√</button>
+            <button class="math-btn" onclick="insertMath('^{}')">س²</button>
+            <button class="math-btn" onclick="insertMath('\\times')">×</button>
+            <button class="math-btn" onclick="insertMath('\\angle')">∠</button>
+            <button class="math-btn" onclick="insertMath('\\triangle')">△</button>
+            <button class="math-btn" onclick="insertMath('\\pi')"> ط </button>
+        </div>
+        <textarea id="math-input" placeholder="اكتب الكود هنا..." oninput="updateMathPreview()"></textarea>
+        <div id="math-preview"></div>
+        <div style="display: flex; gap: 10px; justify-content: center;">
+            <button onclick="closeMathModal()" style="background:#e74c3c; width: 100px; color:white; border:none; border-radius:5px; cursor:pointer;">إلغاء</button>
+            <button onclick="insertMathToQuestion()" style="background:#27ae60; width: 120px; color:white; border:none; border-radius:5px; cursor:pointer;">إدراج</button>
+        </div>
+    </div>
 </div>
 
 <div id="examPages">
@@ -153,12 +178,10 @@
     </div>
 </div>
 
-<input type="file" id="hiddenImgInput" style="display:none;" accept="image/*" onchange="processImage(event)">
-
 <script>
-    let qCount = 0; let pTotal = 1; let targetQId = null; let lastFocusedQuestionId = null;
+    let qCount = 0; let pTotal = 1; let lastFocusedQuestionId = null;
 
-    // مراقب الأرقام الذكي للحذف السهل
+    // مراقب الأرقام الذكي
     document.addEventListener('input', function(e) {
         if (e.target.hasAttribute('contenteditable')) {
             const selection = window.getSelection();
@@ -180,14 +203,12 @@
     });
 
     function toggleSidebar() {
-        const sb = document.getElementById('mainSidebar');
-        const btn = document.getElementById('showBtn');
-        sb.classList.toggle('hidden');
-        btn.style.display = sb.classList.contains('hidden') ? 'block' : 'none';
+        document.getElementById('sidebar').classList.toggle('hidden');
     }
 
     function changeFontSize(val) { document.documentElement.style.setProperty('--base-font-size', val + 'px'); }
 
+    // ملء القوائم عند التحميل
     window.onload = function() {
         const d = document.getElementById('hDay'), m = document.getElementById('hMonth'), y = document.getElementById('hYear'), t = document.getElementById('inputDuration');
         d.innerHTML = ""; m.innerHTML = ""; y.innerHTML = ""; t.innerHTML = ""; 
@@ -214,16 +235,15 @@
         const papers = document.querySelectorAll('.paper');
         const container = papers[papers.length - 1].querySelector('.q-container');
         if (container.scrollHeight > container.offsetHeight) {
-            alert("تنبيه: لقد تجاوزت حجم الصفحة! يرجى إنشاء صفحة جديدة."); return;
+            alert("تنبيه: امتلات الصفحة! يرجى إضافة صفحة جديدة."); return;
         }
         qCount++; const id = 'q' + qCount;
         const html = `<table class="questions-table" id="${id}">
             <tr><td rowspan="2" class="q-num">${toArabic(qCount)}</td>
-            <td colspan="8" class="q-head"><div id="${id}-text" contenteditable="true" ondblclick="triggerImg('${id}')" onfocus="lastFocusedQuestionId='${id}'">اكتب السؤال هنا...</div>
-            <div id="${id}-img-wrapper" class="image-draggable-wrapper" style="display:none; top: 10px; left: 10px; width: 100px;"><img id="${id}-img" class="question-image" style="width:100%; height:100%; pointer-events:none;"></div></td>
+            <td colspan="8" class="q-head"><div id="${id}-text" contenteditable="true" onfocus="lastFocusedQuestionId='${id}'">اكتب السؤال هنا...</div></td>
             <td rowspan="2" style="width:30px; border:none; text-align:center;"><button class="btn-del" onclick="removeQuestion('${id}')">✖</button></td></tr>
             <tr><td class="opt-char">أ</td><td class="opt-val" contenteditable="true"></td><td class="opt-char">ب</td><td class="opt-val" contenteditable="true"></td><td class="opt-char">ج</td><td class="opt-val" contenteditable="true"></td><td class="opt-char">د</td><td class="opt-val" contenteditable="true"></td></tr></table>`;
-        container.insertAdjacentHTML('beforeend', html); lastFocusedQuestionId = id; makeDraggable(document.getElementById(`${id}-img-wrapper`));
+        container.insertAdjacentHTML('beforeend', html);
     }
 
     function createNewPageManual() {
@@ -245,23 +265,7 @@
 
     function removeQuestion(id) { if(confirm('حذف؟')) { document.getElementById(id).remove(); reorderQuestions(); updatePaginationInfo(); } }
     function reorderQuestions() { const qs = document.querySelectorAll('.questions-table'); qs.forEach((q, i) => { q.querySelector('.q-num').innerText = toArabic(i + 1); }); qCount = qs.length; }
-    function triggerImg(id) { targetQId = id; document.getElementById('hiddenImgInput').click(); }
-    function processImage(e) {
-        const file = e.target.files[0]; if (file && targetQId) {
-            const reader = new FileReader(); reader.onload = function(ev) {
-                const img = document.getElementById(`${targetQId}-img`); const wrap = document.getElementById(`${targetQId}-img-wrapper`);
-                img.src = ev.target.result; wrap.style.display = 'block';
-            }; reader.readAsDataURL(file);
-        }
-    }
-    function makeDraggable(el) {
-        let isDragging = false; let offset = { x: 0, y: 0 };
-        el.addEventListener('mousedown', (e) => { isDragging = true; offset.x = e.clientX - el.offsetLeft; offset.y = e.clientY - el.offsetTop; el.style.zIndex = 1000; });
-        document.addEventListener('mousemove', (e) => { if (!isDragging) return; el.style.left = (e.clientX - offset.x) + 'px'; el.style.top = (e.clientY - offset.y) + 'px'; });
-        document.addEventListener('mouseup', () => { isDragging = false; el.style.zIndex = 10; });
-    }
     function toArabic(num) { const id = ['٠','١','٢','٣','٤','٥','٦','٧','٨','٩']; return num.toString().replace(/[0-9]/g, w => id[+w]); }
-    function setLastFocused(id) { lastFocusedQuestionId = id; }
     function openMathModal() { document.getElementById('mathModal').style.display = 'block'; updateMathPreview(); }
     function closeMathModal() { document.getElementById('mathModal').style.display = 'none'; }
     function insertMath(latex) { document.getElementById('math-input').value += latex; updateMathPreview(); }
