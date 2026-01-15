@@ -89,7 +89,7 @@
         .user-credit { margin-top: 10px; padding-top: 10px; border-top: 1px solid #eee; text-align: center; font-size: 13px; color: #2c3e50; font-weight: bold; }
 
         .modal { display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); }
-        .modal-content { background: #fff; margin: 5% auto; padding: 20px; width: 90%; max-width: 700px; border-radius: 10px; direction: rtl; }
+        .modal-content { background: #fff; margin: 5% auto; padding: 20px; width: 90%; max-width: 700px; border-radius: 10px; direction: rtl; max-height: 80vh; overflow-y: auto; }
         .math-btn { 
             padding: 8px 12px; 
             font-size: 14px; 
@@ -108,6 +108,36 @@
         }
         #math-preview { border: 2px solid #8e44ad; padding: 15px; min-height: 80px; margin: 10px 0; background:#fcfaff; text-align: center; font-size: 24px; }
         #math-input { width: 100%; height: 80px; direction: ltr; padding: 10px; border: 1px solid #ccc; }
+
+        /* تصميم الصور داخل الأسئلة */
+        .question-img {
+            max-width: 100%;
+            height: auto;
+            margin: 10px 0;
+            border: 2px dashed #ccc;
+            cursor: move;
+            display: block;
+        }
+        .img-controls {
+            display: flex;
+            gap: 5px;
+            margin: 5px 0;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        .img-control-btn {
+            padding: 5px 10px;
+            background: #3498db;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 11px;
+            font-family: 'Tajawal';
+        }
+        .img-control-btn:hover {
+            background: #2980b9;
+        }
 
         @media print {
             @page { margin: 0; size: A4 portrait; }
@@ -153,6 +183,7 @@
     <button class="action-btn btn-add" onclick="addNewQuestion()">➕ إضافة سؤال جديد</button>
     <button class="action-btn btn-page" onclick="addNewPage()">📄 إضافة صفحة جديدة</button>
     <button class="action-btn btn-math" onclick="openMathModal()">➕ رموز رياضية</button>
+    <button class="action-btn btn-add" onclick="addImageToQuestion()" style="background: #e67e22;">🖼️ إضافة صورة للسؤال</button>
     <button class="action-btn btn-print" onclick="window.print()">🖨️ طباعة الاختبار</button>
     
     <div class="user-credit">إعداد أ/ عبدالرحمن سعد الحجيلي</div>
@@ -388,6 +419,66 @@
             qText.innerHTML += ` \\(${document.getElementById('math-input').value}\\) `;
             MathJax.typesetPromise([qText]); 
             closeMathModal();
+        }
+    }
+
+    // وظائف الصور
+    function addImageToQuestion() {
+        if (!lastFocusedQuestionId) {
+            alert('الرجاء النقر على السؤال المراد إضافة صورة له أولاً');
+            return;
+        }
+        document.getElementById('hiddenImgInput').click();
+    }
+
+    function processImage(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+        
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            if (lastFocusedQuestionId) {
+                const qText = document.getElementById(`${lastFocusedQuestionId}-text`);
+                const imgId = 'img_' + Date.now();
+                const imgHtml = `
+                    <div style="margin: 10px 0; text-align: center;">
+                        <img id="${imgId}" src="${e.target.result}" class="question-img" style="width: 200px;">
+                        <div class="img-controls">
+                            <button class="img-control-btn" onclick="resizeImage('${imgId}', 50)">صغير جداً</button>
+                            <button class="img-control-btn" onclick="resizeImage('${imgId}', 100)">صغير</button>
+                            <button class="img-control-btn" onclick="resizeImage('${imgId}', 200)">متوسط</button>
+                            <button class="img-control-btn" onclick="resizeImage('${imgId}', 300)">كبير</button>
+                            <button class="img-control-btn" onclick="resizeImage('${imgId}', 400)">كبير جداً</button>
+                            <button class="img-control-btn" onclick="alignImage('${imgId}', 'right')">يمين</button>
+                            <button class="img-control-btn" onclick="alignImage('${imgId}', 'center')">وسط</button>
+                            <button class="img-control-btn" onclick="alignImage('${imgId}', 'left')">يسار</button>
+                            <button class="img-control-btn" style="background:#e74c3c;" onclick="removeImage('${imgId}')">🗑️ حذف</button>
+                        </div>
+                    </div>
+                `;
+                qText.innerHTML += imgHtml;
+            }
+        };
+        reader.readAsDataURL(file);
+        event.target.value = '';
+    }
+
+    function resizeImage(imgId, width) {
+        const img = document.getElementById(imgId);
+        if (img) img.style.width = width + 'px';
+    }
+
+    function alignImage(imgId, alignment) {
+        const container = document.getElementById(imgId).parentElement;
+        if (alignment === 'right') container.style.textAlign = 'right';
+        else if (alignment === 'center') container.style.textAlign = 'center';
+        else if (alignment === 'left') container.style.textAlign = 'left';
+    }
+
+    function removeImage(imgId) {
+        const img = document.getElementById(imgId);
+        if (img && confirm('هل تريد حذف هذه الصورة؟')) {
+            img.parentElement.remove();
         }
     }
 </script>
