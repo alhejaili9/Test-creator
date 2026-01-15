@@ -2,7 +2,7 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>منشئ الاختبارات - أ. عبدالرحمن الحجيلي</title>
+    <title>منشئ الاختبارات المطور - أ. عبدالرحمن الحجيلي</title>
     <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
     <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     
@@ -38,7 +38,7 @@
         .header-table { width: 100%; border-collapse: collapse; margin-bottom: 8px; }
         .header-table td { border: 1px solid #000; padding: 4px; text-align: center; font-size: 0.85em; vertical-align: middle; }
         
-        .logo-box { display: flex; justify-content: center; gap: 8px; }
+        .logo-box { display: flex; justify-content: center; gap: 10px; align-items: center; }
         .logo-box img { max-width: 65px; max-height: 65px; object-fit: contain; }
 
         .student-info-container {
@@ -59,11 +59,11 @@
             font-weight: bold; font-size: 0.9em; display: flex; justify-content: space-between;
         }
 
-        /* لوحة التحكم الجانبية (يسار) */
+        /* لوحة التحكم الجانبية (تصحيح اتجاه الإخفاء) */
         .sidebar {
             position: fixed; left: 10px; top: 10px; background: #fff; padding: 15px; border-radius: 12px;
             box-shadow: 0 4px 25px rgba(0,0,0,0.3); width: 260px; z-index: 1000; display: flex; flex-direction: column; gap: 8px;
-            transition: transform 0.4s ease, opacity 0.3s;
+            transition: transform 0.4s ease-in-out, opacity 0.3s;
         }
         .sidebar.hidden { transform: translateX(-300px); opacity: 0; pointer-events: none; }
 
@@ -73,9 +73,9 @@
         }
 
         .sidebar label { font-size: 11px; font-weight: bold; color: #34495e; }
-        .sidebar select, .sidebar input { padding: 6px; border: 1px solid #ddd; border-radius: 6px; font-family: 'Tajawal'; }
+        .sidebar select, .sidebar input { padding: 6px; border: 1px solid #ddd; border-radius: 6px; font-family: 'Tajawal'; width: 100%; }
         
-        button.action-btn { cursor: pointer; padding: 10px; border: none; border-radius: 6px; font-weight: bold; color: #fff; font-family: 'Tajawal'; transition: 0.2s; width: 100%; margin-top: 5px; }
+        button.action-btn { cursor: pointer; padding: 10px; border: none; border-radius: 6px; font-weight: bold; color: #fff; font-family: 'Tajawal'; width: 100%; transition: 0.2s; }
         .btn-add { background: #27ae60; } 
         .btn-page { background: #8e44ad; } 
         .btn-math { background: #6c5ce7; }
@@ -104,10 +104,10 @@
 </head>
 <body>
 
-<button class="toggle-btn" id="toggleBtn" onclick="toggleSidebar()">👁️ إظهار/إخفاء اللوحة</button>
+<button class="toggle-btn" onclick="toggleSidebar()">👁️ إظهار/إخفاء اللوحة</button>
 
 <div class="sidebar" id="sidebar">
-    <h3 style="margin:25px 0 10px 0; text-align:center; font-size:15px; color:#2c3e50;">لوحة تحكم الاختبار</h3>
+    <h3 style="margin:25px 0 10px 0; text-align:center; font-size:15px;">لوحة تحكم الاختبار</h3>
     
     <label>حجم الخط:</label>
     <input type="range" min="14" max="24" value="18" oninput="changeFontSize(this.value)">
@@ -126,9 +126,9 @@
     <select id="inputDuration" onchange="syncFields()"></select>
     
     <button class="action-btn btn-add" onclick="addNewQuestion()">➕ إضافة سؤال جديد</button>
-    <button class="action-btn btn-page" onclick="createNewPageManual()">📄 إضافة صفحة جديدة</button>
-    <button class="action-btn btn-math" onclick="openMathModal()">➕ رموز رياضية (أرجواني)</button>
-    <button class="action-btn btn-print" onclick="window.print()">🖨️ طباعة الاختبار</button>
+    <button class="action-btn btn-page" style="margin-top:5px;" onclick="createNewPageManual()">📄 إضافة صفحة جديدة</button>
+    <button class="action-btn btn-math" style="margin-top:5px;" onclick="openMathModal()">➕ رموز رياضية (أرجواني)</button>
+    <button class="action-btn btn-print" style="margin-top:5px;" onclick="window.print()">🖨️ طباعة الاختبار</button>
     
     <div class="user-credit">إعداد أ/ عبدالرحمن سعد الحجيلي</div>
 </div>
@@ -141,9 +141,9 @@
             <button class="math-btn" onclick="insertMath('\\sqrt{}')">√</button>
             <button class="math-btn" onclick="insertMath('^{}')">س²</button>
             <button class="math-btn" onclick="insertMath('\\times')">×</button>
+            <button class="math-btn" onclick="insertMath('\\div')">÷</button>
             <button class="math-btn" onclick="insertMath('\\angle')">∠</button>
             <button class="math-btn" onclick="insertMath('\\triangle')">△</button>
-            <button class="math-btn" onclick="insertMath('\\pi')"> ط </button>
         </div>
         <textarea id="math-input" placeholder="اكتب الكود هنا..." oninput="updateMathPreview()"></textarea>
         <div id="math-preview"></div>
@@ -162,7 +162,7 @@
                 <td>
                     <div class="logo-box">
                         <img src="https://raw.githubusercontent.com/alhejiali9/Test-creator/main/ministry-logo.png" alt="شعار الوزارة" onerror="this.src='https://upload.wikimedia.org/wikipedia/ar/thumb/0/01/Ministry_of_Education_Saudi_Arabia.svg/1200px-Ministry_of_Education_Saudi_Arabia.svg.png'">
-                        <img src="https://raw.githubusercontent.com/alhejiali9/Test-creator/main/aqeeq_logo.png" alt="شعار العقيق" onerror="this.style.display='none'">
+                        <img src="https://raw.githubusercontent.com/alhejiali9/Test-creator/main/aqeeq_logo.png" alt="شعار العقيق">
                     </div>
                 </td>
                 <td><div id="displayDate">التاريخ: ١ / محرم / ١٤٤٧هـ</div><div contenteditable="true">المادة: رياضيات</div><div id="displayGrade">الصف: الثاني المتوسط</div><div id="displayDuration">الزمن: ٤٥ دقيقة</div></td>
@@ -181,7 +181,7 @@
 <script>
     let qCount = 0; let pTotal = 1; let lastFocusedQuestionId = null;
 
-    // مراقب الأرقام الذكي
+    // مراقب الأرقام الذكي للحذف السهل
     document.addEventListener('input', function(e) {
         if (e.target.hasAttribute('contenteditable')) {
             const selection = window.getSelection();
@@ -208,15 +208,21 @@
 
     function changeFontSize(val) { document.documentElement.style.setProperty('--base-font-size', val + 'px'); }
 
-    // ملء القوائم عند التحميل
+    // ملء القوائم عند التحميل (إصلاح جذري للخيارات الفارغة)
     window.onload = function() {
         const d = document.getElementById('hDay'), m = document.getElementById('hMonth'), y = document.getElementById('hYear'), t = document.getElementById('inputDuration');
+        
         d.innerHTML = ""; m.innerHTML = ""; y.innerHTML = ""; t.innerHTML = ""; 
+
         for(let i=1; i<=31; i++) d.innerHTML += `<option value="${toArabic(i)}">${toArabic(i)}</option>`;
         const months = ["محرم", "صفر", "ربيع الأول", "ربيع الثاني", "جمادى الأولى", "جمادى الآخرة", "رجب", "شعبان", "رمضان", "شوال", "ذو القعدة", "ذو الحجة"];
         months.forEach(mon => m.innerHTML += `<option value="${mon}">${mon}</option>`);
         for(let i=1447; i<=1460; i++) y.innerHTML += `<option value="${toArabic(i)}">${toArabic(i)}</option>`;
-        for(let i=10; i<=200; i+=5) { let s = (i === 45) ? 'selected' : ''; t.innerHTML += `<option value="${toArabic(i)}" ${s}>${toArabic(i)}</option>`; }
+        for(let i=10; i<=200; i+=5) { 
+            let s = (i === 45) ? 'selected' : ''; 
+            t.innerHTML += `<option value="${toArabic(i)}" ${s}>${toArabic(i)}</option>`; 
+        }
+        
         syncFields(); addNewQuestion();
     };
 
@@ -226,6 +232,7 @@
         const m = document.getElementById('hMonth').value || "محرم";
         const y = document.getElementById('hYear').value || toArabic(1447);
         const dur = document.getElementById('inputDuration').value || toArabic(45);
+
         document.querySelectorAll('#displayGrade').forEach(el => el.innerText = `الصف: ${g}`);
         document.querySelectorAll('#displayDate').forEach(el => el.innerText = `التاريخ: ${d} / ${m} / ${y}هـ`);
         document.querySelectorAll('#displayDuration').forEach(el => el.innerText = `الزمن: ${dur} دقيقة`);
@@ -234,9 +241,11 @@
     function addNewQuestion() {
         const papers = document.querySelectorAll('.paper');
         const container = papers[papers.length - 1].querySelector('.q-container');
+        
         if (container.scrollHeight > container.offsetHeight) {
-            alert("تنبيه: امتلات الصفحة! يرجى إضافة صفحة جديدة."); return;
+            alert("تنبيه: امتلات الصفحة! يرجى إنشاء صفحة جديدة."); return;
         }
+
         qCount++; const id = 'q' + qCount;
         const html = `<table class="questions-table" id="${id}">
             <tr><td rowspan="2" class="q-num">${toArabic(qCount)}</td>
@@ -249,7 +258,9 @@
     function createNewPageManual() {
         pTotal++;
         const html = `<div class="paper" id="page${pTotal}"><div id="qc${pTotal}" class="q-container" style="flex-grow:1; position:relative;"></div><div class="footer-line"><div class="footer-text">انتهت الأسئلة - بالتوفيق</div><div class="page-num">صفحة ${toArabic(pTotal)} من ${toArabic(pTotal)}</div></div></div>`;
-        document.getElementById('examPages').insertAdjacentHTML('beforeend', html); updatePaginationInfo(); syncFields();
+        document.getElementById('examPages').insertAdjacentHTML('beforeend', html);
+        updatePaginationInfo();
+        syncFields();
     }
 
     function updatePaginationInfo() {
