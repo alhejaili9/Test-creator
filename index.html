@@ -33,6 +33,12 @@
             flex-direction: column;
             font-size: var(--base-font-size);
             page-break-after: always;
+            transition: box-shadow 0.3s;
+        }
+        
+        .paper.active-page {
+            box-shadow: 0 0 15px #3498db, 0 0 5px #3498db inset;
+            border-color: #3498db;
         }
 
         .delete-page-btn {
@@ -69,13 +75,22 @@
         .student-name-box { flex: 3; border-left: 2px solid #000; padding: 5px; text-align: right; font-weight: bold; }
         .student-class-box { flex: 1; padding: 5px; text-align: right; font-weight: bold; }
 
-        .questions-table { width: 100%; border-collapse: collapse; margin-bottom: 6px; table-layout: fixed; page-break-inside: avoid; }
-        .questions-table td { border: 1px solid #000; padding: 3px 5px; vertical-align: middle; line-height: 1.15; word-wrap: break-word; font-size: 0.95em; }
-        .q-head { font-weight: bold; text-align: right; position: relative; min-height: 25px; }
+        .questions-table { width: 100%; border-collapse: collapse; margin-bottom: 4px; table-layout: fixed; page-break-inside: avoid; }
+        .questions-table td { border: 1px solid #000; padding: 2px 4px; vertical-align: middle; line-height: 1.1; word-wrap: break-word; font-size: 0.95em; position: relative; }
+        
+        .editable-content {
+            min-height: 20px;
+            outline: none;
+            overflow: auto;
+            resize: vertical;
+            width: 100%;
+        }
+
+        .q-head { font-weight: bold; text-align: right; position: relative; min-height: 20px; }
         .q-head.shaded { background: #f2f2f2; }
         .q-num { width: 35px; text-align: center; font-weight: bold; }
         .opt-char { width: 30px; text-align: center; background: #eee; font-weight: bold; font-size: 0.9em; }
-        .opt-val { width: 22%; text-align: center; font-size: 0.9em; }
+        .opt-val { width: 22%; text-align: center; font-size: 0.9em; position: relative; }
 
         .q-container {
             flex: 1;
@@ -84,7 +99,8 @@
             position: relative;
         }
         
-        .floating-image {
+        /* Floating Elements */
+        .floating-image, .floating-text {
             position: absolute;
             border: 2px solid #3498db;
             border-radius: 8px;
@@ -93,50 +109,59 @@
             cursor: move;
             z-index: 200;
         }
+        .floating-image img { display: block; max-width: 100%; pointer-events: none; }
         
-        .floating-image img {
+        .floating-text .text-content {
+            min-width: 100px; min-height: 30px; outline: none; font-family: inherit; font-size: inherit; cursor: text;
+        }
+        .floating-text.no-border { border: 1px dashed #ccc; }
+        
+        .resize-handle {
+            position: absolute; bottom: 0; right: 0; width: 15px; height: 15px;
+            background: #3498db; border-radius: 50%; cursor: nwse-resize; border: 2px solid white;
+            z-index: 20;
+        }
+        .element-controls {
+            position: absolute; top: -12px; right: -12px; display: flex; gap: 2px;
+        }
+        .ctrl-btn {
+            width: 24px; height: 24px; background: #e74c3c; color: white;
+            border: 2px solid white; border-radius: 50%; cursor: pointer;
+            font-size: 12px; display: flex; align-items: center; justify-content: center; font-weight: bold;
+        }
+        .ctrl-btn.toggle-border { background: #f1c40f; color: black; }
+
+        /* Inner Cell Image */
+        .inner-img-wrapper {
+            position: absolute; 
+            z-index: 10;
+            cursor: move;
+            display: inline-block;
+            border: 1px dashed #3498db;
+            padding: 0;
+            background: rgba(255,255,255,0.9);
+            top: 5px; left: 5px; 
+        }
+        .inner-img-wrapper img {
+            width: 100px; 
+            max-width: none;
             display: block;
-            max-width: 100%;
             pointer-events: none;
         }
-        
-        .floating-image .resize-handle {
-            position: absolute;
-            bottom: 0;
-            right: 0;
-            width: 20px;
-            height: 20px;
-            background: #3498db;
-            border-radius: 50%;
-            cursor: nwse-resize;
-            border: 2px solid white;
+        .inner-img-del {
+            position: absolute; top: -8px; left: -8px; width: 18px; height: 18px;
+            background: red; color: white; border-radius: 50%; text-align: center;
+            line-height: 18px; font-size: 12px; cursor: pointer; font-weight: bold;
+            display: none; z-index: 21;
         }
-        
-        .floating-image .img-delete-btn {
-            position: absolute;
-            top: -10px;
-            right: -10px;
-            width: 25px;
-            height: 25px;
-            background: #e74c3c;
-            color: white;
-            border: 2px solid white;
-            border-radius: 50%;
-            cursor: pointer;
-            font-size: 14px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: bold;
-        }
+        .inner-img-wrapper:hover .inner-img-del { display: block; }
+        .inner-img-wrapper:hover { border-style: solid; }
 
-        .question-inline-img {
-            max-width: 100%;
-            max-height: 150px;
-            display: block;
-            margin: 3px auto;
-            border-radius: 5px;
+        .opt-cam-btn {
+            position: absolute; bottom: 1px; left: 1px; font-size: 10px; background: none;
+            border: none; cursor: pointer; opacity: 0.3; transition: 0.2s;
         }
+        .opt-cam-btn:hover { opacity: 1; transform: scale(1.2); }
 
         .footer-line { 
             margin-top: auto; border-top: 2px solid #000; padding-top: 5px; 
@@ -165,112 +190,53 @@
         .btn-print { background: #2980b9; }
         .btn-new { background: #e67e22; }
         .btn-image { background: #9b59b6; }
+        .btn-text { background: #34495e; }
         .btn-del { background: #e74c3c; padding: 2px 8px; font-size: 11px; width: auto; }
         .btn-font-size { background: #3498db; padding: 2px 8px; font-size: 11px; width: auto; margin-bottom: 3px; }
+        .btn-resize-essay { background: #7f8c8d; padding: 1px 6px; font-size: 10px; width: auto; margin: 0 2px; color: white; border: none; border-radius: 4px; cursor: pointer; }
 
-        .shading-controls {
-            margin-top: 10px;
-            padding: 10px;
-            background: #f8f9fa;
-            border-radius: 8px;
-            border: 1px solid #ddd;
-        }
-
-        .shading-controls label {
-            display: block;
-            margin: 5px 0;
-            cursor: pointer;
-        }
-
+        .shading-controls { margin-top: 10px; padding: 10px; background: #f8f9fa; border-radius: 8px; border: 1px solid #ddd; }
+        .shading-controls label { display: block; margin: 5px 0; cursor: pointer; }
         .user-credit { margin-top: 10px; padding-top: 10px; border-top: 1px solid #eee; text-align: center; font-size: 13px; color: #2c3e50; font-weight: bold; }
 
         .modal { display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); }
         .modal-content { background: #fff; margin: 5% auto; padding: 20px; width: 90%; max-width: 700px; border-radius: 10px; direction: rtl; max-height: 80vh; overflow-y: auto; }
         .math-btn { 
-            padding: 8px 12px; 
-            font-size: 14px; 
-            cursor: pointer; 
-            background:#fff; 
-            border:2px solid #8e44ad; 
-            border-radius: 8px; 
-            color: #8e44ad; 
-            font-weight: bold; 
-            min-width: 80px;
-            transition: 0.2s;
+            padding: 8px 12px; font-size: 14px; cursor: pointer; background:#fff; border:2px solid #8e44ad; 
+            border-radius: 8px; color: #8e44ad; font-weight: bold; min-width: 80px; transition: 0.2s;
         }
-        .math-btn:hover {
-            background: #8e44ad;
-            color: white;
-        }
+        .math-btn:hover { background: #8e44ad; color: white; }
         #math-preview { border: 2px solid #8e44ad; padding: 15px; min-height: 80px; margin: 10px 0; background:#fcfaff; text-align: center; font-size: 24px; }
         #math-input { width: 100%; height: 80px; direction: ltr; padding: 10px; border: 1px solid #ccc; }
 
-        .font-size-modal-content {
-            background: #fff;
-            margin: 15% auto;
-            padding: 25px;
-            width: 350px;
-            border-radius: 12px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
-        }
-
-        .font-size-slider {
-            width: 100%;
-            margin: 15px 0;
-        }
-
-        .confirm-modal-content {
-            background: #fff;
-            margin: 15% auto;
-            padding: 30px;
-            width: 400px;
-            border-radius: 12px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
-            text-align: center;
-        }
+        .font-size-modal-content { background: #fff; margin: 15% auto; padding: 25px; width: 350px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.3); }
+        .font-size-slider { width: 100%; margin: 15px 0; }
+        .confirm-modal-content { background: #fff; margin: 15% auto; padding: 30px; width: 400px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.3); text-align: center; }
 
         .save-indicator {
-            position: fixed;
-            top: 70px;
-            left: 10px;
-            background: #27ae60;
-            color: white;
-            padding: 8px 15px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-family: 'Tajawal';
-            opacity: 0;
-            transition: opacity 0.3s;
-            z-index: 999;
+            position: fixed; top: 70px; left: 10px; background: #27ae60; color: white;
+            padding: 8px 15px; border-radius: 20px; font-size: 12px; font-family: 'Tajawal';
+            opacity: 0; transition: opacity 0.3s; z-index: 999;
         }
-
-        .save-indicator.show {
-            opacity: 1;
-        }
+        .save-indicator.show { opacity: 1; }
 
         @media print {
             @page { margin: 0; size: A4 portrait; }
             body { margin: 0; padding: 0; background: none !important; }
-            .sidebar, .btn-del, .btn-font-size, .toggle-btn, .user-credit, .delete-page-btn, .save-indicator, .floating-image .resize-handle, .floating-image .img-delete-btn { display: none !important; }
-            .floating-image {
-                border: none !important;
-                background: transparent !important;
-                padding: 0 !important;
+            .sidebar, .btn-del, .btn-font-size, .btn-resize-essay, .toggle-btn, .user-credit, .delete-page-btn, .save-indicator, .floating-image .resize-handle, .element-controls, .inner-img-del, .opt-cam-btn, .paper.active-page { display: none !important; border: none !important; box-shadow: none !important; }
+            
+            .floating-image, .floating-text, .inner-img-wrapper {
+                border: none !important; background: transparent !important; padding: 0 !important;
             }
+            .floating-text.no-border { border: none !important; }
             .paper { 
-                margin: 0 !important; 
-                border: 4px double #000 !important; 
-                box-shadow: none !important; 
-                width: 210mm !important; 
-                min-height: 297mm !important;
-                max-height: 297mm !important;
-                padding: 12mm 15mm !important; 
-                page-break-after: always !important; 
-                page-break-inside: avoid !important;
+                margin: 0 !important; border: 4px double #000 !important; box-shadow: none !important; 
+                width: 210mm !important; min-height: 297mm !important; max-height: 297mm !important;
+                padding: 12mm 15mm !important; page-break-after: always !important; page-break-inside: avoid !important;
             }
-            .questions-table {
-                page-break-inside: avoid !important;
-            }
+            .questions-table { page-break-inside: avoid !important; }
+            .editable-content { resize: none !important; overflow: visible !important; }
+            .inner-img-wrapper .resize-handle { display: none !important; }
         }
     </style>
 </head>
@@ -308,6 +274,7 @@
     <button class="action-btn btn-add" onclick="addTrueFalseQuestion()" style="background: #8e44ad;">✓✗ إضافة سؤال صح/خطأ</button>
     <button class="action-btn btn-page" onclick="addNewPage()">📄 إضافة صفحة جديدة</button>
     <button class="action-btn btn-image" onclick="addFloatingImage()">🖼️ إدراج صورة متحركة</button>
+    <button class="action-btn btn-text" onclick="addFloatingText()">📝 إدراج مربع نص حر</button>
     <button class="action-btn btn-math" onclick="openMathModal()">➕ رموز رياضية</button>
     <button class="action-btn btn-print" onclick="window.print()">🖨️ طباعة الاختبار</button>
     <button class="action-btn btn-new" onclick="confirmNewExam()">🔄 بدء اختبار جديد</button>
@@ -315,12 +282,11 @@
     <div style="margin-top: 15px; padding: 10px; background: #e8f4f8; border-radius: 8px; font-size: 11px; border: 2px solid #3498db;">
         <div style="font-weight: bold; margin-bottom: 8px; color: #2c3e50; text-align: center;">📌 تعليمات الاستخدام</div>
         <ul style="margin: 0; padding-right: 15px; line-height: 1.6;">
-            <li><strong>إضافة صورة للسؤال:</strong> اضغط زر 📷</li>
-            <li><strong>إضافة صورة متحركة:</strong> اضغط زر 🖼️</li>
-            <li><strong>تكبير/تصغير الصورة:</strong> اسحب الدائرة الزرقاء</li>
-            <li><strong>نقل الصورة:</strong> اسحب الصورة بالماوس</li>
-            <li><strong>تغيير حجم خط السؤال:</strong> اضغط زر 🔤</li>
-            <li><strong>الحفظ التلقائي:</strong> يتم تلقائياً عند أي تغيير</li>
+            <li><strong>تحديد الصفحة:</strong> اضغط على الصفحة لتفعيلها قبل إضافة سؤال.</li>
+            <li><strong>تكبير الخلايا:</strong> اسحب زاوية مربع النص للأسفل.</li>
+            <li><strong>صور الخيارات:</strong> اضغط زر 📷 في زاوية الخيار.</li>
+            <li><strong>تحريك الصور:</strong> اسحب الصورة داخل مربع السؤال.</li>
+            <li><strong>تكبير الصورة:</strong> اسحب الدائرة الزرقاء في زاوية الصورة.</li>
         </ul>
     </div>
     
@@ -333,47 +299,16 @@
         <div style="display: flex; flex-wrap: wrap; justify-content: flex-start; gap: 5px; direction: rtl;">
             <button class="math-btn" onclick="insertMath('\\frac{}{}')">كسر</button>
             <button class="math-btn" onclick="insertMath('\\sqrt{}')">جذر</button>
-            <button class="math-btn" onclick="insertMath('\\sqrt[3]{}')">جذر تكعيبي</button>
             <button class="math-btn" onclick="insertMath('^{}')">أس</button>
             <button class="math-btn" onclick="insertMath('_{}')">منخفض</button>
             <button class="math-btn" onclick="insertMath('\\times')">×</button>
             <button class="math-btn" onclick="insertMath('\\div')">÷</button>
-            <button class="math-btn" onclick="insertMath('\\pm')">±</button>
-            <button class="math-btn" onclick="insertMath('\\mp')">∓</button>
             <button class="math-btn" onclick="insertMath('=')">يساوي</button>
-            <button class="math-btn" onclick="insertMath('\\neq')">لا يساوي</button>
             <button class="math-btn" onclick="insertMath('\\approx')">تقريباً</button>
-            <button class="math-btn" onclick="insertMath('\\leq')">≤</button>
-            <button class="math-btn" onclick="insertMath('\\geq')">≥</button>
-            <button class="math-btn" onclick="insertMath('<')">أصغر من</button>
-            <button class="math-btn" onclick="insertMath('>')">أكبر من</button>
             <button class="math-btn" onclick="insertMath('\\angle')">زاوية</button>
             <button class="math-btn" onclick="insertMath('\\triangle')">مثلث</button>
-            <button class="math-btn" onclick="insertMath('\\square')">مربع</button>
-            <button class="math-btn" onclick="insertMath('\\parallel')">توازي</button>
-            <button class="math-btn" onclick="insertMath('\\perp')">تعامد</button>
-            <button class="math-btn" onclick="insertMath('\\cong')">تطابق</button>
-            <button class="math-btn" onclick="insertMath('\\sim')">تشابه</button>
-            <button class="math-btn" onclick="insertMath('\\pi')">ط (باي)</button>
-            <button class="math-btn" onclick="insertMath('\\theta')">θ</button>
-            <button class="math-btn" onclick="insertMath('\\alpha')">α</button>
-            <button class="math-btn" onclick="insertMath('\\beta')">β</button>
-            <button class="math-btn" onclick="insertMath('\\sum')">مجموع</button>
-            <button class="math-btn" onclick="insertMath('\\int')">تكامل</button>
-            <button class="math-btn" onclick="insertMath('\\infty')">∞</button>
-            <button class="math-btn" onclick="insertMath('\\rightarrow')">→</button>
-            <button class="math-btn" onclick="insertMath('\\leftarrow')">←</button>
-            <button class="math-btn" onclick="insertMath('\\Rightarrow')">⇒</button>
-            <button class="math-btn" onclick="insertMath('\\Leftarrow')">⇐</button>
-            <button class="math-btn" onclick="insertMath('\\left( \\right)')">أقواس</button>
-            <button class="math-btn" onclick="insertMath('\\left[ \\right]')">أقواس مربعة</button>
-            <button class="math-btn" onclick="insertMath('\\left\\{ \\right\\}')">أقواس معقوفة</button>
-            <button class="math-btn" onclick="insertMath('\\%')">%</button>
+            <button class="math-btn" onclick="insertMath('\\pi')">ط</button>
             <button class="math-btn" onclick="insertMath('\\circ')">°</button>
-            <button class="math-btn" onclick="insertMath('\\cdot')">·</button>
-            <button class="math-btn" onclick="insertMath('\\ldots')">...</button>
-            <button class="math-btn" onclick="insertMath('\\overline{}')">خط علوي</button>
-            <button class="math-btn" onclick="insertMath('\\underline{}')">خط سفلي</button>
         </div>
         <textarea id="math-input" placeholder="اكتب الكود هنا..." oninput="updateMathPreview()" style="direction: ltr;"></textarea>
         <div id="math-preview"></div>
@@ -413,7 +348,7 @@
 </div>
 
 <div id="examPages">
-    <div class="paper" id="page1">
+    <div class="paper active-page" id="page1" onclick="setActivePage('page1')">
         <button class="delete-page-btn" onclick="deletePage('page1')" style="display: none;">🗑️ حذف هذه الصفحة</button>
         <table class="header-table">
             <tr>
@@ -437,16 +372,28 @@
     </div>
 </div>
 
+<input type="file" id="genericImgInput" accept="image/*" style="display:none;">
+
 <script>
     let qCount = 0; 
     let pTotal = 1; 
+    let activePageId = 'page1';
     let lastFocusedQuestionId = null;
-    let currentPage = 1;
     let currentQuestionId = null;
     let saveTimeout;
-    let floatingImageCounter = 0;
+    let floatingElementCounter = 0;
+    let targetImageContainer = null;
+    let isResetting = false; // Flag to prevent auto-save during reset
+
+    function setActivePage(pageId) {
+        activePageId = pageId;
+        document.querySelectorAll('.paper').forEach(p => p.classList.remove('active-page'));
+        const p = document.getElementById(pageId);
+        if(p) p.classList.add('active-page');
+    }
 
     function autoSave() {
+        if (isResetting) return;
         clearTimeout(saveTimeout);
         saveTimeout = setTimeout(() => {
             saveExamData();
@@ -463,11 +410,12 @@
     }
 
     function saveExamData() {
+        if (isResetting) return;
         const examData = {
             html: document.getElementById('examPages').innerHTML,
             qCount: qCount,
             pTotal: pTotal,
-            currentPage: currentPage,
+            activePageId: activePageId,
             grade: document.getElementById('inputGrade').value,
             day: document.getElementById('hDay').value,
             month: document.getElementById('hMonth').value,
@@ -485,9 +433,8 @@
             try {
                 const data = JSON.parse(savedData);
                 document.getElementById('examPages').innerHTML = data.html;
-                qCount = data.qCount || 0;
                 pTotal = data.pTotal || 1;
-                currentPage = data.currentPage || 1;
+                activePageId = data.activePageId || 'page1';
                 
                 if (data.grade) document.getElementById('inputGrade').value = data.grade;
                 if (data.day) document.getElementById('hDay').value = data.day;
@@ -503,6 +450,7 @@
                 updateDeleteButtons();
                 syncFields();
                 reattachEventListeners();
+                reorderAllQuestions(); 
             } catch (e) {
                 console.error('Error loading saved data:', e);
             }
@@ -510,41 +458,32 @@
     }
 
     function reattachEventListeners() {
-        document.querySelectorAll('.floating-image').forEach(img => {
-            attachFloatingImageEvents(img);
-        });
+        document.querySelectorAll('.floating-image, .floating-text').forEach(el => attachFloatingEvents(el));
+        document.querySelectorAll('.inner-img-wrapper').forEach(wrap => attachInnerImageEvents(wrap));
     }
 
-    function confirmNewExam() {
-        document.getElementById('confirmNewExamModal').style.display = 'block';
-    }
-
-    function closeConfirmModal() {
-        document.getElementById('confirmNewExamModal').style.display = 'none';
-    }
-
+    function confirmNewExam() { document.getElementById('confirmNewExamModal').style.display = 'block'; }
+    function closeConfirmModal() { document.getElementById('confirmNewExamModal').style.display = 'none'; }
+    
     function startNewExam() {
-        localStorage.clear();
+        isResetting = true; // Stop auto-save from interfering
         localStorage.removeItem('examData');
         closeConfirmModal();
-        setTimeout(() => {
-            window.location.href = window.location.href.split('?')[0];
-        }, 100);
+        window.location.reload();
     }
 
     document.addEventListener('input', function(e) {
         autoSave();
-        
         if (e.target.hasAttribute('contenteditable')) {
             const selection = window.getSelection();
             if (!selection.rangeCount) return;
             const range = selection.getRangeAt(0);
-            const offset = range.startOffset;
             const node = range.startContainer;
             const arabicNumbers = ['٠','١','٢','٣','٤','٥','٦','٧','٨','٩'];
-            if (node.textContent) {
+            if (node.textContent && !node.parentElement.classList.contains('q-num')) {
                 const convertedText = node.textContent.replace(/[0-9]/g, w => arabicNumbers[+w]);
                 if (node.textContent !== convertedText) {
+                    const offset = range.startOffset;
                     node.textContent = convertedText;
                     const newRange = document.createRange();
                     newRange.setStart(node, Math.min(offset, node.textContent.length));
@@ -558,128 +497,220 @@
     document.addEventListener('click', function(e) {
         const questionDiv = e.target.closest('[id$="-text"]');
         if (questionDiv) {
-            const qId = questionDiv.id.replace('-text', '');
-            lastFocusedQuestionId = qId;
+            lastFocusedQuestionId = questionDiv.id.replace('-text', '');
         }
     });
 
-    window.addEventListener('beforeunload', function(e) {
-        saveExamData();
-    });
-
+    window.addEventListener('beforeunload', function(e) { saveExamData(); });
     function toggleSidebar() { document.getElementById('sidebar').classList.toggle('hidden'); }
-    function changeFontSize(val) { 
-        document.documentElement.style.setProperty('--base-font-size', val + 'px'); 
-        autoSave();
-    }
+    function changeFontSize(val) { document.documentElement.style.setProperty('--base-font-size', val + 'px'); autoSave(); }
 
     function applyShadingStyle() {
         const style = document.querySelector('input[name="shading"]:checked').value;
         const allQuestions = document.querySelectorAll('.q-head');
-        
         allQuestions.forEach((q, index) => {
             q.classList.remove('shaded');
-            if (style === 'all') {
-                q.classList.add('shaded');
-            } else if (style === 'alternate' && index % 2 === 0) {
-                q.classList.add('shaded');
-            }
+            if (style === 'all') q.classList.add('shaded');
+            else if (style === 'alternate' && index % 2 === 0) q.classList.add('shaded');
         });
-        
         autoSave();
     }
 
+    /* --- Floating Images & Text Logic --- */
     function addFloatingImage() {
-        const input = document.createElement('input');
-        input.type = 'file';
-        input.accept = 'image/*';
+        const input = document.getElementById('genericImgInput');
         input.onchange = function(e) {
             const file = e.target.files[0];
             if (!file) return;
-            
             const reader = new FileReader();
             reader.onload = function(event) {
-                floatingImageCounter++;
-                const imgId = 'floatimg_' + floatingImageCounter;
-                const container = document.getElementById('qc' + currentPage);
-                
-                const floatingDiv = document.createElement('div');
-                floatingDiv.className = 'floating-image';
-                floatingDiv.id = imgId;
-                floatingDiv.style.left = '50px';
-                floatingDiv.style.top = '50px';
-                floatingDiv.innerHTML = `
-                    <div class="img-delete-btn" onclick="deleteFloatingImage('${imgId}')">✖</div>
-                    <img src="${event.target.result}" style="width: 200px; height: auto;">
-                    <div class="resize-handle"></div>
-                `;
-                
-                container.appendChild(floatingDiv);
-                attachFloatingImageEvents(floatingDiv);
+                floatingElementCounter++;
+                const id = 'floatimg_' + floatingElementCounter;
+                const container = document.getElementById(activePageId).querySelector('.q-container');
+                const el = document.createElement('div');
+                el.className = 'floating-image';
+                el.id = id;
+                el.style.left = '50px'; el.style.top = '50px';
+                el.innerHTML = `<div class="element-controls"><div class="ctrl-btn" onclick="removeEl('${id}')">✖</div></div>
+                                <img src="${event.target.result}" style="width: 200px;">
+                                <div class="resize-handle"></div>`;
+                container.appendChild(el);
+                attachFloatingEvents(el);
                 autoSave();
             };
             reader.readAsDataURL(file);
+            input.value = '';
         };
         input.click();
     }
 
-    function attachFloatingImageEvents(element) {
-        let isDragging = false;
-        let isResizing = false;
+    function addFloatingText() {
+        floatingElementCounter++;
+        const id = 'floattext_' + floatingElementCounter;
+        const container = document.getElementById(activePageId).querySelector('.q-container');
+        const el = document.createElement('div');
+        el.className = 'floating-text';
+        el.id = id;
+        el.style.left = '50px'; el.style.top = '50px';
+        el.innerHTML = `<div class="element-controls">
+                            <div class="ctrl-btn toggle-border" onclick="toggleBorder('${id}')" title="إطار">👁️</div>
+                            <div class="ctrl-btn" onclick="removeEl('${id}')">✖</div>
+                        </div>
+                        <div class="text-content" contenteditable="true">نص حر...</div>
+                        <div class="resize-handle"></div>`;
+        container.appendChild(el);
+        attachFloatingEvents(el);
+        autoSave();
+    }
+
+    function toggleBorder(id) { document.getElementById(id).classList.toggle('no-border'); autoSave(); }
+    function removeEl(id) { if(confirm('حذف العنصر؟')) { document.getElementById(id).remove(); autoSave(); } }
+
+    function attachFloatingEvents(element) {
+        let isDragging = false, isResizing = false;
         let startX, startY, startLeft, startTop, startWidth;
         
         element.addEventListener('mousedown', function(e) {
             if (e.target.classList.contains('resize-handle')) {
-                isResizing = true;
-                startX = e.clientX;
-                const img = element.querySelector('img');
-                startWidth = img.offsetWidth;
-                e.preventDefault();
-                e.stopPropagation();
-            } else if (e.target.classList.contains('img-delete-btn')) {
+                isResizing = true; startX = e.clientX;
+                const target = element.querySelector('img') || element.querySelector('.text-content');
+                startWidth = target.offsetWidth;
+                e.preventDefault(); e.stopPropagation();
+            } else if (e.target.closest('.element-controls') || e.target.hasAttribute('contenteditable')) {
                 return;
             } else {
-                isDragging = true;
-                startX = e.clientX;
-                startY = e.clientY;
-                startLeft = element.offsetLeft;
-                startTop = element.offsetTop;
+                isDragging = true; startX = e.clientX; startY = e.clientY;
+                startLeft = element.offsetLeft; startTop = element.offsetTop;
                 e.preventDefault();
             }
         });
         
         document.addEventListener('mousemove', function(e) {
             if (isDragging) {
-                const deltaX = e.clientX - startX;
-                const deltaY = e.clientY - startY;
-                element.style.left = (startLeft + deltaX) + 'px';
-                element.style.top = (startTop + deltaY) + 'px';
+                element.style.left = (startLeft + e.clientX - startX) + 'px';
+                element.style.top = (startTop + e.clientY - startY) + 'px';
             } else if (isResizing) {
-                const deltaX = e.clientX - startX;
-                const newWidth = startWidth + deltaX;
-                if (newWidth > 50) {
+                const newWidth = startWidth + (e.clientX - startX);
+                if (newWidth > 30) {
                     const img = element.querySelector('img');
-                    img.style.width = newWidth + 'px';
+                    if(img) img.style.width = newWidth + 'px';
+                    const txt = element.querySelector('.text-content');
+                    if(txt) txt.style.width = newWidth + 'px';
                 }
             }
         });
         
         document.addEventListener('mouseup', function() {
-            if (isDragging || isResizing) {
-                autoSave();
+            if (isDragging || isResizing) autoSave();
+            isDragging = false; isResizing = false;
+        });
+    }
+
+    /* --- Inner Cell Images (FIXED LOGIC) --- */
+    function triggerOptionImg(btn) {
+        targetImageContainer = btn.parentElement;
+        const input = document.getElementById('genericImgInput');
+        input.onchange = function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                const wrapper = document.createElement('div');
+                wrapper.className = 'inner-img-wrapper';
+                wrapper.contentEditable = "false";
+                wrapper.innerHTML = `<div class="inner-img-del">✖</div><img src="${event.target.result}"><div class="resize-handle"></div>`;
+                wrapper.querySelector('.inner-img-del').onclick = function() {
+                    if(confirm('حذف الصورة؟')) { wrapper.remove(); autoSave(); }
+                };
+                targetImageContainer.appendChild(wrapper);
+                attachInnerImageEvents(wrapper);
+                postAddQuestion(); // Check overflow for image
+            };
+            reader.readAsDataURL(file);
+            input.value = '';
+        };
+        input.click();
+    }
+
+    function handleImageUpload(event, qId) {
+        const file = event.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const qText = document.getElementById(qId + '-text');
+            const parentCell = qText.parentElement;
+            const wrapper = document.createElement('div');
+            wrapper.className = 'inner-img-wrapper';
+            wrapper.contentEditable = "false";
+            wrapper.style.top = '30px'; wrapper.style.left = '10px';
+            wrapper.innerHTML = `<div class="inner-img-del">✖</div><img src="${e.target.result}"><div class="resize-handle"></div>`;
+            wrapper.querySelector('.inner-img-del').onclick = function() {
+                if(confirm('حذف الصورة؟')) { wrapper.remove(); autoSave(); }
+            };
+            parentCell.appendChild(wrapper);
+            attachInnerImageEvents(wrapper);
+            postAddQuestion(); // Check overflow for image
+        };
+        reader.readAsDataURL(file);
+        event.target.value = '';
+    }
+
+    function attachInnerImageEvents(elmnt) {
+        let isDragging = false, isResizing = false;
+        let startX, startY, startLeft, startTop, startWidth;
+
+        elmnt.addEventListener('mousedown', function(e) {
+            if (e.target.classList.contains('resize-handle')) {
+                isResizing = true;
+                startX = e.clientX;
+                const img = elmnt.querySelector('img');
+                startWidth = img.offsetWidth;
+                e.preventDefault();
+                e.stopPropagation();
+            } else if (e.target.classList.contains('inner-img-del')) {
+                return;
+            } else {
+                isDragging = true;
+                startX = e.clientX;
+                startY = e.clientY;
+                startLeft = elmnt.offsetLeft;
+                startTop = elmnt.offsetTop;
+                e.preventDefault();
             }
+        });
+
+        document.addEventListener('mousemove', function(e) {
+            if (isDragging) {
+                e.preventDefault();
+                let newLeft = startLeft + (e.clientX - startX);
+                let newTop = startTop + (e.clientY - startY);
+                
+                const parent = elmnt.offsetParent;
+                if(parent) {
+                    if (newLeft < 0) newLeft = 0;
+                    if (newTop < 0) newTop = 0;
+                    if (newLeft > parent.clientWidth - 20) newLeft = parent.clientWidth - 20;
+                }
+
+                elmnt.style.left = newLeft + "px";
+                elmnt.style.top = newTop + "px";
+            } else if (isResizing) {
+                e.preventDefault();
+                const newWidth = startWidth + (e.clientX - startX);
+                if (newWidth > 30) {
+                    elmnt.querySelector('img').style.width = newWidth + 'px';
+                }
+            }
+        });
+
+        document.addEventListener('mouseup', function() {
+            if (isDragging || isResizing) autoSave();
             isDragging = false;
             isResizing = false;
         });
     }
 
-    function deleteFloatingImage(imgId) {
-        if (confirm('هل تريد حذف هذه الصورة؟')) {
-            document.getElementById(imgId).remove();
-            autoSave();
-        }
-    }
-
+    /* --- Page & Question Management --- */
     window.onload = function() {
         const d = document.getElementById('hDay'), m = document.getElementById('hMonth'), y = document.getElementById('hYear'), t = document.getElementById('inputDuration');
         d.innerHTML = ""; m.innerHTML = ""; y.innerHTML = ""; t.innerHTML = ""; 
@@ -706,36 +737,132 @@
         autoSave();
     }
 
+    function getTargetContainer() {
+        const p = document.getElementById(activePageId);
+        if(!p) return document.getElementById('qc1'); 
+        return p.querySelector('.q-container');
+    }
+
     function addNewQuestion() {
-        const container = document.getElementById('qc' + currentPage);
+        const container = getTargetContainer();
+        const id = 'q_' + Date.now(); 
+        const shadingClass = getShadingClass(document.querySelectorAll('.question-block').length); 
         
-        qCount++; 
-        const id = 'q' + qCount;
-        const shadingClass = getShadingClass(qCount - 1);
-        
-        const html = `<table class="questions-table" id="${id}">
-            <tr><td rowspan="2" class="q-num">${toArabic(qCount)}</td>
+        const html = `<table class="questions-table question-block" id="${id}">
+            <tr><td rowspan="2" class="q-num"></td>
             <td colspan="8" class="q-head ${shadingClass}">
-                <div id="${id}-text" contenteditable="true">اكتب السؤال هنا...</div>
+                <div id="${id}-text" class="editable-content" contenteditable="true">اكتب السؤال هنا...</div>
                 <input type="file" id="${id}-imgInput" accept="image/*" style="display:none;" onchange="handleImageUpload(event, '${id}')">
             </td>
             <td rowspan="2" style="width:30px; border:none; text-align:center;">
-                <button class="btn-font-size" onclick="openFontSizeModal('${id}')" title="تغيير حجم الخط">🔤</button><br>
-                <button class="btn-del" onclick="document.getElementById('${id}-imgInput').click()" style="background:#e67e22; margin-bottom:3px;" title="إضافة صورة">📷</button><br>
-                <button class="btn-del" onclick="removeQuestion('${id}')" title="حذف السؤال">✖</button>
+                <button class="btn-font-size" onclick="openFontSizeModal('${id}')">🔤</button><br>
+                <button class="btn-del" onclick="document.getElementById('${id}-imgInput').click()" style="background:#e67e22; margin-bottom:3px;">📷</button><br>
+                <button class="btn-del" onclick="removeQuestion('${id}')">✖</button>
             </td></tr>
-            <tr><td class="opt-char">أ</td><td class="opt-val" contenteditable="true"></td><td class="opt-char">ب</td><td class="opt-val" contenteditable="true"></td><td class="opt-char">ج</td><td class="opt-val" contenteditable="true"></td><td class="opt-char">د</td><td class="opt-val" contenteditable="true"></td></tr></table>`;
+            <tr>
+                <td class="opt-char">أ</td><td class="opt-val"><div class="editable-content" contenteditable="true"></div><button class="opt-cam-btn" onclick="triggerOptionImg(this)">📷</button></td>
+                <td class="opt-char">ب</td><td class="opt-val"><div class="editable-content" contenteditable="true"></div><button class="opt-cam-btn" onclick="triggerOptionImg(this)">📷</button></td>
+                <td class="opt-char">ج</td><td class="opt-val"><div class="editable-content" contenteditable="true"></div><button class="opt-cam-btn" onclick="triggerOptionImg(this)">📷</button></td>
+                <td class="opt-char">د</td><td class="opt-val"><div class="editable-content" contenteditable="true"></div><button class="opt-cam-btn" onclick="triggerOptionImg(this)">📷</button></td>
+            </tr></table>`;
         container.insertAdjacentHTML('beforeend', html);
-        
-        setTimeout(() => {
-            if (container.scrollHeight > container.clientHeight + 10) {
-                const lastQ = document.getElementById(id);
-                addNewPage();
-                document.getElementById('qc' + currentPage).appendChild(lastQ);
-                updatePaginationInfo();
+        postAddQuestion();
+    }
+
+    function addEssayQuestion() {
+        const container = getTargetContainer();
+        const id = 'q_' + Date.now();
+        const html = `<div id="${id}" class="question-block" style="margin-bottom: 6px; page-break-inside: avoid;">
+            <div style="display: flex; align-items: flex-start; gap: 8px;">
+                <div class="q-num-essay" style="min-width: 30px; text-align: center; font-weight: bold; border: 1px solid #000; padding: 3px; font-size: 0.95em;"></div>
+                <div style="flex: 1; border: 1px solid #000; padding: 6px; position: relative;">
+                    <div id="${id}-text" class="editable-content" contenteditable="true" style="margin-bottom: 6px; min-height: 18px; font-size: 0.95em;">اكتب السؤال المقالي هنا...</div>
+                    <input type="file" id="${id}-imgInput" accept="image/*" style="display:none;" onchange="handleImageUpload(event, '${id}')">
+                    <div id="${id}-answer-area" style="border-top: 1px solid #ccc; min-height: 60px; margin-top: 6px; padding-top: 6px;">
+                        <div style="color: #999; font-size: 12px; text-align: center;">مساحة الإجابة</div>
+                        <div style="margin-top: 12px; border-top: 1px dotted #ccc;"></div>
+                        <div style="margin-top: 12px; border-top: 1px dotted #ccc;"></div>
+                    </div>
+                </div>
+                <div style="width: 30px; text-align: center;">
+                    <button class="btn-font-size" onclick="openFontSizeModal('${id}')">🔤</button><br>
+                    <button class="btn-del" onclick="document.getElementById('${id}-imgInput').click()" style="background:#e67e22; margin-bottom:3px;">📷</button><br>
+                    <button class="btn-resize-essay" onclick="resizeEssay('${id}', 20)">+</button><br>
+                    <button class="btn-resize-essay" onclick="resizeEssay('${id}', -20)">-</button><br>
+                    <button class="btn-del" onclick="removeQuestion('${id}')">✖</button>
+                </div>
+            </div>
+        </div>`;
+        container.insertAdjacentHTML('beforeend', html);
+        postAddQuestion();
+    }
+
+    function addTrueFalseQuestion() {
+        const container = getTargetContainer();
+        const id = 'q_' + Date.now();
+        const html = `<table class="questions-table question-block" id="${id}" style="margin-bottom: 4px; width: 100%;">
+            <tr>
+                <td class="q-num" style="width: 30px; text-align: center; border: 1px solid #000; font-size: 0.95em;"></td>
+                <td style="width: auto; text-align: right; padding: 6px; border: 1px solid #000;">
+                    <div id="${id}-text" class="editable-content" contenteditable="true" style="font-size: 0.95em;">اكتب السؤال هنا...</div>
+                </td>
+                <td style="width: 70px; border: 1px solid #000; text-align: center;"></td>
+                <td style="width:30px; border:none; text-align:center;">
+                    <button class="btn-font-size" onclick="openFontSizeModal('${id}')">🔤</button><br>
+                    <button class="btn-del" onclick="removeQuestion('${id}')">✖</button>
+                </td>
+            </tr>
+        </table>`;
+        container.insertAdjacentHTML('beforeend', html);
+        postAddQuestion();
+    }
+
+    function postAddQuestion() {
+        reorderAllQuestions(); 
+        autoSave();
+        // Pagination Overflow Logic
+        const container = getTargetContainer();
+        // Buffer 10px to avoid precision issues
+        if (container.scrollHeight > container.clientHeight + 10) {
+            const lastQ = container.lastElementChild;
+            // Only move if it is a question block
+            if (lastQ && lastQ.classList.contains('question-block')) {
+                 addNewPage(); // activePageId updates here
+                 // Wait a split second for DOM update
+                 setTimeout(() => {
+                     const newContainer = document.getElementById(activePageId).querySelector('.q-container');
+                     newContainer.appendChild(lastQ);
+                     updatePaginationInfo();
+                     autoSave();
+                 }, 0);
             }
-            autoSave();
-        }, 100);
+        }
+    }
+
+    function reorderAllQuestions() {
+        const blocks = document.querySelectorAll('.question-block');
+        blocks.forEach((block, index) => {
+            const qNum = block.querySelector('.q-num, .q-num-essay');
+            if(qNum) qNum.innerText = toArabic(index + 1);
+        });
+        qCount = blocks.length;
+        applyShadingStyle();
+    }
+
+    function resizeEssay(id, amount) {
+        const area = document.getElementById(id + '-answer-area');
+        const currentHeight = parseInt(window.getComputedStyle(area).minHeight);
+        area.style.minHeight = Math.max(40, currentHeight + amount) + 'px';
+        autoSave();
+        postAddQuestion(); // Check overflow on resize
+    }
+
+    function removeQuestion(id) { 
+        if(confirm('حذف السؤال؟')) { 
+            document.getElementById(id).remove(); 
+            reorderAllQuestions(); 
+            autoSave(); 
+        } 
     }
 
     function getShadingClass(index) {
@@ -745,233 +872,83 @@
         return '';
     }
 
-    function handleImageUpload(event, qId) {
-        const file = event.target.files[0];
-        if (!file) return;
-        
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            const qText = document.getElementById(qId + '-text');
-            const img = document.createElement('img');
-            img.src = e.target.result;
-            img.className = 'question-inline-img';
-            qText.appendChild(img);
-            autoSave();
-        };
-        reader.readAsDataURL(file);
-        event.target.value = '';
-    }
-
-    function addEssayQuestion() {
-        const container = document.getElementById('qc' + currentPage);
-        
-        qCount++; 
-        const id = 'q' + qCount;
-        const html = `<div id="${id}" style="margin-bottom: 6px; page-break-inside: avoid;">
-            <div style="display: flex; align-items: flex-start; gap: 8px;">
-                <div class="q-num-essay" style="min-width: 30px; text-align: center; font-weight: bold; border: 1px solid #000; padding: 3px; font-size: 0.95em;">${toArabic(qCount)}</div>
-                <div style="flex: 1; border: 1px solid #000; padding: 6px;">
-                    <div id="${id}-text" contenteditable="true" style="margin-bottom: 6px; min-height: 18px; font-size: 0.95em;">اكتب السؤال المقالي هنا...</div>
-                    <div style="border-top: 1px solid #ccc; min-height: 60px; margin-top: 6px; padding-top: 6px;">
-                        <div style="color: #999; font-size: 12px; text-align: center;">مساحة الإجابة</div>
-                        <div style="margin-top: 12px; border-top: 1px dotted #ccc;"></div>
-                        <div style="margin-top: 12px; border-top: 1px dotted #ccc;"></div>
-                    </div>
-                </div>
-                <div style="width: 30px; text-align: center;">
-                    <button class="btn-font-size" onclick="openFontSizeModal('${id}')" title="تغيير حجم الخط">🔤</button><br>
-                    <button class="btn-del" onclick="removeQuestion('${id}')" title="حذف السؤال">✖</button>
-                </div>
-            </div>
-        </div>`;
-        container.insertAdjacentHTML('beforeend', html);
-        
-        setTimeout(() => {
-            if (container.scrollHeight > container.clientHeight + 10) {
-                const lastQ = document.getElementById(id);
-                addNewPage();
-                document.getElementById('qc' + currentPage).appendChild(lastQ);
-                updatePaginationInfo();
-            }
-            autoSave();
-        }, 100);
-    }
-
-    function addTrueFalseQuestion() {
-        const container = document.getElementById('qc' + currentPage);
-        
-        qCount++; 
-        const id = 'q' + qCount;
-        const html = `<table class="questions-table" id="${id}" style="margin-bottom: 6px; width: 100%;">
-            <tr>
-                <td class="q-num" style="width: 30px; text-align: center; border: 1px solid #000; font-size: 0.95em;">${toArabic(qCount)}</td>
-                <td style="width: auto; text-align: right; padding: 6px; border: 1px solid #000;">
-                    <div id="${id}-text" contenteditable="true" style="font-size: 0.95em;">اكتب السؤال هنا...</div>
-                </td>
-                <td style="width: 70px; border: 1px solid #000; text-align: center;"></td>
-                <td style="width:30px; border:none; text-align:center;">
-                    <button class="btn-font-size" onclick="openFontSizeModal('${id}')" title="تغيير حجم الخط">🔤</button><br>
-                    <button class="btn-del" onclick="removeQuestion('${id}')" title="حذف السؤال">✖</button>
-                </td>
-            </tr>
-        </table>`;
-        container.insertAdjacentHTML('beforeend', html);
-        
-        setTimeout(() => {
-            if (container.scrollHeight > container.clientHeight + 10) {
-                const lastQ = document.getElementById(id);
-                addNewPage();
-                document.getElementById('qc' + currentPage).appendChild(lastQ);
-                updatePaginationInfo();
-            }
-            autoSave();
-        }, 100);
-    }
-
-    function openFontSizeModal(questionId) {
-        currentQuestionId = questionId;
-        const question = document.getElementById(questionId);
-        const currentSize = window.getComputedStyle(question).fontSize;
-        const sizeValue = parseInt(currentSize);
-        
-        document.getElementById('questionFontSlider').value = sizeValue;
-        document.getElementById('currentFontSize').innerText = sizeValue;
-        document.getElementById('fontSizeModal').style.display = 'block';
-    }
-
-    function updateQuestionFontPreview(value) {
-        document.getElementById('currentFontSize').innerText = value;
-        if (currentQuestionId) {
-            const question = document.getElementById(currentQuestionId);
-            question.style.fontSize = value + 'px';
-        }
-    }
-
-    function applyQuestionFontSize() {
-        autoSave();
-        closeFontSizeModal();
-    }
-
-    function closeFontSizeModal() {
-        document.getElementById('fontSizeModal').style.display = 'none';
-        currentQuestionId = null;
-    }
-
+    /* --- Pagination --- */
     function addNewPage() {
         pTotal++;
-        currentPage = pTotal;
-        const newPaperHtml = `<div class="paper" id="page${pTotal}">
-            <button class="delete-page-btn" onclick="deletePage('page${pTotal}')">🗑️ حذف هذه الصفحة</button>
-            <div id="qc${pTotal}" class="q-container"></div>
+        const newId = 'page' + pTotal;
+        const newPaperHtml = `<div class="paper" id="${newId}" onclick="setActivePage('${newId}')">
+            <button class="delete-page-btn" onclick="deletePage('${newId}')">🗑️ حذف هذه الصفحة</button>
+            <div class="q-container"></div>
             <div class="footer-line">
-                <div class="footer-text">انتهت الأسئلة - مع تمنياتنا لكم بالتوفيق</div>
-                <div class="page-num">صفحة ${toArabic(pTotal)} من ${toArabic(pTotal)}</div>
+                <div class="footer-text">تابع الأسئلة في الصفحة التالية...</div>
+                <div class="page-num"></div>
             </div>
         </div>`;
         document.getElementById('examPages').insertAdjacentHTML('beforeend', newPaperHtml);
         updatePaginationInfo();
         updateDeleteButtons();
+        setActivePage(newId);
         syncFields();
         autoSave();
     }
 
     function deletePage(pageId) {
-        const papers = document.querySelectorAll('.paper');
-        if (papers.length <= 1) {
-            alert('لا يمكن حذف الصفحة الوحيدة!');
-            return;
-        }
-        
-        if (confirm('هل تريد حذف هذه الصفحة؟ سيتم حذف جميع الأسئلة فيها.')) {
+        if (document.querySelectorAll('.paper').length <= 1) { alert('لا يمكن حذف الصفحة الوحيدة!'); return; }
+        if (confirm('هل تريد حذف هذه الصفحة؟')) {
             document.getElementById(pageId).remove();
-            pTotal--;
-            if (currentPage > pTotal) currentPage = pTotal;
-            reorderAllQuestions();
             updatePaginationInfo();
             updateDeleteButtons();
+            reorderAllQuestions();
+            setActivePage(document.querySelector('.paper:last-child').id);
             autoSave();
         }
     }
 
     function updateDeleteButtons() {
         const papers = document.querySelectorAll('.paper');
-        papers.forEach((paper, index) => {
-            const deleteBtn = paper.querySelector('.delete-page-btn');
-            if (papers.length > 1) {
-                deleteBtn.style.display = 'block';
-            } else {
-                deleteBtn.style.display = 'none';
-            }
+        papers.forEach(p => {
+            p.querySelector('.delete-page-btn').style.display = papers.length > 1 ? 'block' : 'none';
         });
     }
 
     function updatePaginationInfo() {
         const papers = document.querySelectorAll('.paper');
         papers.forEach((p, i) => {
-            const pageNum = i + 1;
-            p.querySelector('.page-num').innerText = `صفحة ${toArabic(pageNum)} من ${toArabic(papers.length)}`;
-            const footerText = p.querySelector('.footer-text');
-            if (pageNum === papers.length) footerText.innerText = "انتهت الأسئلة - مع تمنياتنا لكم بالتوفيق";
-            else footerText.innerText = "تابع الأسئلة في الصفحة التالية...";
+            p.querySelector('.page-num').innerText = `صفحة ${toArabic(i+1)} من ${toArabic(papers.length)}`;
+            const ft = p.querySelector('.footer-text');
+            ft.innerText = (i === papers.length - 1) ? "انتهت الأسئلة - مع تمنياتنا لكم بالتوفيق" : "تابع الأسئلة في الصفحة التالية...";
         });
+        pTotal = papers.length;
     }
 
-    function removeQuestion(id) { 
-        if(confirm('هل تريد حذف هذا السؤال؟')) { 
-            document.getElementById(id).remove(); 
-            reorderAllQuestions(); 
-            updatePaginationInfo();
-            autoSave();
-        } 
-    }
-    
-    function reorderAllQuestions() {
-        const allQuestions = document.querySelectorAll('.questions-table, [id^="q"]:not(.questions-table):not([id*="qc"]):not([id*="floatimg"])');
-        let newCount = 0;
-        
-        allQuestions.forEach((q) => {
-            newCount++;
-            const qNum = q.querySelector('.q-num, .q-num-essay');
-            if (qNum) {
-                qNum.innerText = toArabic(newCount);
-            }
-        });
-        
-        qCount = newCount;
-        applyShadingStyle();
-    }
-    
+    /* --- Utils --- */
     function toArabic(num) { 
         const id = ['٠','١','٢','٣','٤','٥','٦','٧','٨','٩']; 
         return num.toString().replace(/[0-9]/g, w => id[+w]); 
     }
     
-    function openMathModal() { 
-        document.getElementById('mathModal').style.display = 'block'; 
-    }
-    
-    function closeMathModal() { 
-        document.getElementById('mathModal').style.display = 'none'; 
-    }
-    
-    function insertMath(latex) { 
-        document.getElementById('math-input').value += latex; 
-        updateMathPreview(); 
-    }
-    
+    function openFontSizeModal(qId) { currentQuestionId = qId; document.getElementById('fontSizeModal').style.display = 'block'; }
+    function closeFontSizeModal() { document.getElementById('fontSizeModal').style.display = 'none'; currentQuestionId = null; }
+    function updateQuestionFontPreview(val) { document.getElementById('currentFontSize').innerText = val; if(currentQuestionId) document.getElementById(currentQuestionId).style.fontSize = val + 'px'; }
+    function applyQuestionFontSize() { autoSave(); closeFontSizeModal(); }
+
+    function openMathModal() { document.getElementById('mathModal').style.display = 'block'; }
+    function closeMathModal() { document.getElementById('mathModal').style.display = 'none'; }
+    function insertMath(latex) { document.getElementById('math-input').value += latex; updateMathPreview(); }
     function updateMathPreview() {
         const preview = document.getElementById('math-preview');
         preview.innerText = `$$${document.getElementById('math-input').value}$$`;
         MathJax.typesetPromise([preview]);
     }
-    
     function insertMathToQuestion() {
         if (lastFocusedQuestionId) {
-            const qText = document.getElementById(`${lastFocusedQuestionId}-text`);
-            qText.innerHTML += ` \\(${document.getElementById('math-input').value}\\) `;
-            MathJax.typesetPromise([qText]); 
-            closeMathModal();
-            autoSave();
+            const qText = document.getElementById(`${lastFocusedQuestionId}-text`) || document.getElementById(lastFocusedQuestionId);
+            if(qText) {
+                qText.innerHTML += ` \\(${document.getElementById('math-input').value}\\) `;
+                MathJax.typesetPromise([qText]); 
+                closeMathModal();
+                autoSave();
+            }
         }
     }
 </script>
