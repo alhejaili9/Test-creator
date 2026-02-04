@@ -1,3 +1,4 @@
+```html
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
@@ -33,6 +34,30 @@
             flex-direction: column;
             font-size: var(--base-font-size);
             page-break-after: always;
+        }
+
+        .delete-page-btn {
+            position: absolute;
+            top: -15px;
+            right: 50%;
+            transform: translateX(50%);
+            background: #e74c3c;
+            color: white;
+            border: none;
+            padding: 8px 20px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-family: 'Tajawal';
+            font-weight: bold;
+            font-size: 13px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+            z-index: 100;
+            transition: 0.3s;
+        }
+
+        .delete-page-btn:hover {
+            background: #c0392b;
+            transform: translateX(50%) scale(1.05);
         }
 
         .header-table { width: 100%; border-collapse: collapse; margin-bottom: 8px; }
@@ -217,7 +242,7 @@
         @media print {
             @page { margin: 0; size: A4 portrait; }
             body { margin: 0; padding: 0; background: none !important; }
-            .sidebar, .btn-del, .toggle-btn, .user-credit, .img-control-btn, .img-controls, .resize-handle, .img-delete-btn { display: none !important; }
+            .sidebar, .btn-del, .toggle-btn, .user-credit, .img-control-btn, .img-controls, .resize-handle, .img-delete-btn, .delete-page-btn { display: none !important; }
             .img-wrapper {
                 border: none !important;
                 background: transparent !important;
@@ -345,6 +370,7 @@
 
 <div id="examPages">
     <div class="paper" id="page1" ondblclick="addFreeTextBox(event, 'qc1')">
+        <button class="delete-page-btn" onclick="deletePage('page1')" style="display: none;">🗑️ حذف هذه الصفحة</button>
         <table class="header-table">
             <tr>
                 <td><div>المملكة العربية السعودية</div><div>وزارة التعليم</div><div>إدارة التعليم بالمدينة المنورة</div><div><strong>مدارس العقيق الأهلية</strong></div></td>
@@ -415,6 +441,7 @@
         for(let i=1447; i<=1460; i++) y.innerHTML += `<option value="${i}">${toArabic(i)}</option>`;
         for(let i=10; i<=200; i+=5) { let s = (i === 45) ? 'selected' : ''; t.innerHTML += `<option value="${i}" ${s}>${toArabic(i)}</option>`; }
         syncFields();
+        updateDeleteButtons();
     };
 
     function syncFields() {
@@ -524,6 +551,7 @@
         pTotal++;
         currentPage = pTotal;
         const newPaperHtml = `<div class="paper" id="page${pTotal}" ondblclick="addFreeTextBox(event, 'qc${pTotal}')">
+            <button class="delete-page-btn" onclick="deletePage('page${pTotal}')">🗑️ حذف هذه الصفحة</button>
             <div id="qc${pTotal}" class="q-container"></div>
             <div class="footer-line">
                 <div class="footer-text">انتهت الأسئلة - مع تمنياتنا لكم بالتوفيق</div>
@@ -532,7 +560,37 @@
         </div>`;
         document.getElementById('examPages').insertAdjacentHTML('beforeend', newPaperHtml);
         updatePaginationInfo();
+        updateDeleteButtons();
         syncFields();
+    }
+
+    function deletePage(pageId) {
+        const papers = document.querySelectorAll('.paper');
+        if (papers.length <= 1) {
+            alert('لا يمكن حذف الصفحة الوحيدة!');
+            return;
+        }
+        
+        if (confirm('هل تريد حذف هذه الصفحة؟ سيتم حذف جميع الأسئلة فيها.')) {
+            document.getElementById(pageId).remove();
+            pTotal--;
+            if (currentPage > pTotal) currentPage = pTotal;
+            reorderAllQuestions();
+            updatePaginationInfo();
+            updateDeleteButtons();
+        }
+    }
+
+    function updateDeleteButtons() {
+        const papers = document.querySelectorAll('.paper');
+        papers.forEach((paper, index) => {
+            const deleteBtn = paper.querySelector('.delete-page-btn');
+            if (papers.length > 1) {
+                deleteBtn.style.display = 'block';
+            } else {
+                deleteBtn.style.display = 'none';
+            }
+        });
     }
 
     function updatePaginationInfo() {
@@ -552,6 +610,22 @@
             reorderQuestions(); 
             updatePaginationInfo(); 
         } 
+    }
+    
+    function reorderAllQuestions() {
+        const allQuestions = document.querySelectorAll('.questions-table, [id^="q"]:not(.questions-table)');
+        allQuestions.forEach((q, i) => {
+            const qNum = q.querySelector('.q-num');
+            if (qNum) {
+                qNum.innerText = toArabic(i + 1);
+            } else {
+                const numDiv = q.querySelector('div[style*="min-width: 35px"]');
+                if (numDiv) {
+                    numDiv.innerText = toArabic(i + 1);
+                }
+            }
+        });
+        qCount = allQuestions.length;
     }
     
     function reorderQuestions() { 
@@ -766,3 +840,4 @@
 </script>
 </body>
 </html>
+```
