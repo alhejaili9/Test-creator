@@ -125,7 +125,9 @@
         .btn-page { background: #16a085; }
         .btn-math { background: #8e44ad; } 
         .btn-print { background: #2980b9; }
+        .btn-new { background: #e67e22; }
         .btn-del { background: #e74c3c; padding: 2px 8px; font-size: 12px; width: auto; }
+        .btn-font-size { background: #3498db; padding: 2px 8px; font-size: 12px; width: auto; margin-bottom: 5px; }
 
         .user-credit { margin-top: 10px; padding-top: 10px; border-top: 1px solid #eee; text-align: center; font-size: 13px; color: #2c3e50; font-weight: bold; }
 
@@ -149,6 +151,51 @@
         }
         #math-preview { border: 2px solid #8e44ad; padding: 15px; min-height: 80px; margin: 10px 0; background:#fcfaff; text-align: center; font-size: 24px; }
         #math-input { width: 100%; height: 80px; direction: ltr; padding: 10px; border: 1px solid #ccc; }
+
+        /* نافذة تغيير حجم الخط */
+        .font-size-modal-content {
+            background: #fff;
+            margin: 15% auto;
+            padding: 25px;
+            width: 350px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+        }
+
+        .font-size-slider {
+            width: 100%;
+            margin: 15px 0;
+        }
+
+        /* نافذة تأكيد اختبار جديد */
+        .confirm-modal-content {
+            background: #fff;
+            margin: 15% auto;
+            padding: 30px;
+            width: 400px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            text-align: center;
+        }
+
+        .save-indicator {
+            position: fixed;
+            top: 70px;
+            left: 10px;
+            background: #27ae60;
+            color: white;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-family: 'Tajawal';
+            opacity: 0;
+            transition: opacity 0.3s;
+            z-index: 999;
+        }
+
+        .save-indicator.show {
+            opacity: 1;
+        }
 
         /* تصميم الصور داخل الأسئلة */
         .question-img {
@@ -242,7 +289,7 @@
         @media print {
             @page { margin: 0; size: A4 portrait; }
             body { margin: 0; padding: 0; background: none !important; }
-            .sidebar, .btn-del, .toggle-btn, .user-credit, .img-control-btn, .img-controls, .resize-handle, .img-delete-btn, .delete-page-btn { display: none !important; }
+            .sidebar, .btn-del, .btn-font-size, .toggle-btn, .user-credit, .img-control-btn, .img-controls, .resize-handle, .img-delete-btn, .delete-page-btn, .save-indicator { display: none !important; }
             .img-wrapper {
                 border: none !important;
                 background: transparent !important;
@@ -271,12 +318,14 @@
 </head>
 <body>
 
+<div class="save-indicator" id="saveIndicator">✓ تم الحفظ تلقائياً</div>
+
 <button class="toggle-btn" onclick="toggleSidebar()">👁️ إظهار/إخفاء اللوحة</button>
 
 <div class="sidebar" id="sidebar">
     <h3 style="margin:25px 0 10px 0; text-align:center; font-size:14px; color:#2c3e50;">لوحة تحكم الاختبار</h3>
     
-    <label>حجم الخط:</label><input type="range" min="14" max="24" value="18" oninput="changeFontSize(this.value)">
+    <label>حجم الخط العام:</label><input type="range" min="14" max="24" value="18" oninput="changeFontSize(this.value)">
     <label>الصف:</label><input type="text" id="inputGrade" value="الثاني المتوسط" oninput="syncFields()">
 
     <label>التاريخ الهجري:</label>
@@ -295,6 +344,7 @@
     <button class="action-btn btn-page" onclick="addNewPage()">📄 إضافة صفحة جديدة</button>
     <button class="action-btn btn-math" onclick="openMathModal()">➕ رموز رياضية</button>
     <button class="action-btn btn-print" onclick="window.print()">🖨️ طباعة الاختبار</button>
+    <button class="action-btn btn-new" onclick="confirmNewExam()">🔄 بدء اختبار جديد</button>
     
     <div style="margin-top: 15px; padding: 10px; background: #e8f4f8; border-radius: 8px; font-size: 11px; border: 2px solid #3498db;">
         <div style="font-weight: bold; margin-bottom: 8px; color: #2c3e50; text-align: center;">📌 تعليمات الاستخدام</div>
@@ -302,9 +352,11 @@
             <li><strong>إضافة صورة:</strong> اضغط زر 📷 بجانب السؤال</li>
             <li><strong>تكبير/تصغير الصورة:</strong> اسحب الدائرة الزرقاء</li>
             <li><strong>نقل الصورة:</strong> اسحب الصورة بالماوس</li>
+            <li><strong>تغيير حجم خط السؤال:</strong> اضغط زر 🔤</li>
             <li><strong>الكتابة في أي مكان:</strong> دبل كليك في المساحة الفارغة</li>
             <li><strong>نقل مربع النص:</strong> اسحبه بالماوس</li>
             <li><strong>حذف مربع نص:</strong> Ctrl + Delete</li>
+            <li><strong>الحفظ التلقائي:</strong> يتم تلقائياً عند أي تغيير</li>
         </ul>
     </div>
     
@@ -368,6 +420,34 @@
     </div>
 </div>
 
+<div id="fontSizeModal" class="modal">
+    <div class="font-size-modal-content">
+        <h3 style="text-align: center; color: #3498db; margin-top: 0;">⚙️ تعديل حجم الخط</h3>
+        <div style="text-align: center; margin: 20px 0;">
+            <label style="font-size: 16px; font-weight: bold; color: #2c3e50;">حجم الخط: <span id="currentFontSize">18</span>px</label>
+        </div>
+        <input type="range" id="questionFontSlider" class="font-size-slider" min="12" max="28" value="18" oninput="updateQuestionFontPreview(this.value)">
+        <div style="display: flex; gap: 10px; justify-content: center; margin-top: 20px;">
+            <button onclick="closeFontSizeModal()" style="background:#95a5a6; width: 100px; color:white; border:none; border-radius:5px; cursor:pointer; padding:10px; font-family: 'Tajawal';">إلغاء</button>
+            <button onclick="applyQuestionFontSize()" style="background:#3498db; width: 120px; color:white; border:none; border-radius:5px; cursor:pointer; padding:10px; font-family: 'Tajawal';">تطبيق</button>
+        </div>
+    </div>
+</div>
+
+<div id="confirmNewExamModal" class="modal">
+    <div class="confirm-modal-content">
+        <h3 style="color: #e67e22; margin-top: 0;">⚠️ تأكيد بدء اختبار جديد</h3>
+        <p style="font-size: 16px; line-height: 1.8; color: #2c3e50;">
+            هل أنت متأكد من بدء اختبار جديد؟<br>
+            <strong style="color: #e74c3c;">سيتم حذف جميع البيانات الحالية!</strong>
+        </p>
+        <div style="display: flex; gap: 10px; justify-content: center; margin-top: 25px;">
+            <button onclick="closeConfirmModal()" style="background:#95a5a6; width: 100px; color:white; border:none; border-radius:5px; cursor:pointer; padding:12px; font-family: 'Tajawal'; font-weight: bold;">إلغاء</button>
+            <button onclick="startNewExam()" style="background:#e74c3c; width: 150px; color:white; border:none; border-radius:5px; cursor:pointer; padding:12px; font-family: 'Tajawal'; font-weight: bold;">نعم، ابدأ جديد</button>
+        </div>
+    </div>
+</div>
+
 <div id="examPages">
     <div class="paper" id="page1" ondblclick="addFreeTextBox(event, 'qc1')">
         <button class="delete-page-btn" onclick="deletePage('page1')" style="display: none;">🗑️ حذف هذه الصفحة</button>
@@ -398,8 +478,99 @@
     let pTotal = 1; 
     let lastFocusedQuestionId = null;
     let currentPage = 1;
+    let currentQuestionId = null;
+    let saveTimeout;
 
+    // الحفظ التلقائي
+    function autoSave() {
+        clearTimeout(saveTimeout);
+        saveTimeout = setTimeout(() => {
+            saveExamData();
+            showSaveIndicator();
+        }, 1000);
+    }
+
+    function showSaveIndicator() {
+        const indicator = document.getElementById('saveIndicator');
+        indicator.classList.add('show');
+        setTimeout(() => {
+            indicator.classList.remove('show');
+        }, 2000);
+    }
+
+    function saveExamData() {
+        const examData = {
+            html: document.getElementById('examPages').innerHTML,
+            qCount: qCount,
+            pTotal: pTotal,
+            currentPage: currentPage,
+            grade: document.getElementById('inputGrade').value,
+            day: document.getElementById('hDay').value,
+            month: document.getElementById('hMonth').value,
+            year: document.getElementById('hYear').value,
+            duration: document.getElementById('inputDuration').value,
+            fontSize: getComputedStyle(document.documentElement).getPropertyValue('--base-font-size')
+        };
+        localStorage.setItem('examData', JSON.stringify(examData));
+    }
+
+    function loadExamData() {
+        const savedData = localStorage.getItem('examData');
+        if (savedData) {
+            try {
+                const data = JSON.parse(savedData);
+                document.getElementById('examPages').innerHTML = data.html;
+                qCount = data.qCount || 0;
+                pTotal = data.pTotal || 1;
+                currentPage = data.currentPage || 1;
+                
+                if (data.grade) document.getElementById('inputGrade').value = data.grade;
+                if (data.day) document.getElementById('hDay').value = data.day;
+                if (data.month) document.getElementById('hMonth').value = data.month;
+                if (data.year) document.getElementById('hYear').value = data.year;
+                if (data.duration) document.getElementById('inputDuration').value = data.duration;
+                if (data.fontSize) document.documentElement.style.setProperty('--base-font-size', data.fontSize);
+                
+                updateDeleteButtons();
+                syncFields();
+                
+                // إعادة ربط الأحداث
+                reattachEventListeners();
+            } catch (e) {
+                console.error('Error loading saved data:', e);
+            }
+        }
+    }
+
+    function reattachEventListeners() {
+        // إعادة ربط أحداث double click للصفحات
+        document.querySelectorAll('.paper').forEach((paper, index) => {
+            const containerId = 'qc' + (index + 1);
+            paper.ondblclick = function(event) {
+                addFreeTextBox(event, containerId);
+            };
+        });
+    }
+
+    function confirmNewExam() {
+        document.getElementById('confirmNewExamModal').style.display = 'block';
+    }
+
+    function closeConfirmModal() {
+        document.getElementById('confirmNewExamModal').style.display = 'none';
+    }
+
+    function startNewExam() {
+        if (confirm('هل أنت متأكد تماماً؟ لن تتمكن من استرجاع البيانات!')) {
+            localStorage.removeItem('examData');
+            location.reload();
+        }
+    }
+
+    // مراقبة التغييرات وحفظها تلقائياً
     document.addEventListener('input', function(e) {
+        autoSave();
+        
         if (e.target.hasAttribute('contenteditable')) {
             const selection = window.getSelection();
             if (!selection.rangeCount) return;
@@ -420,17 +591,26 @@
         }
     });
 
-    // تتبع السؤال النشط
+    // حفظ عند أي نقرة أو تغيير
     document.addEventListener('click', function(e) {
         const questionDiv = e.target.closest('[id$="-text"]');
         if (questionDiv) {
             const qId = questionDiv.id.replace('-text', '');
             lastFocusedQuestionId = qId;
         }
+        autoSave();
+    });
+
+    // حفظ قبل إغلاق الصفحة
+    window.addEventListener('beforeunload', function(e) {
+        saveExamData();
     });
 
     function toggleSidebar() { document.getElementById('sidebar').classList.toggle('hidden'); }
-    function changeFontSize(val) { document.documentElement.style.setProperty('--base-font-size', val + 'px'); }
+    function changeFontSize(val) { 
+        document.documentElement.style.setProperty('--base-font-size', val + 'px'); 
+        autoSave();
+    }
 
     window.onload = function() {
         const d = document.getElementById('hDay'), m = document.getElementById('hMonth'), y = document.getElementById('hYear'), t = document.getElementById('inputDuration');
@@ -440,6 +620,9 @@
         months.forEach(mon => m.innerHTML += `<option value="${mon}">${mon}</option>`);
         for(let i=1447; i<=1460; i++) y.innerHTML += `<option value="${i}">${toArabic(i)}</option>`;
         for(let i=10; i<=200; i+=5) { let s = (i === 45) ? 'selected' : ''; t.innerHTML += `<option value="${i}" ${s}>${toArabic(i)}</option>`; }
+        
+        // تحميل البيانات المحفوظة
+        loadExamData();
         syncFields();
         updateDeleteButtons();
     };
@@ -453,6 +636,7 @@
         document.querySelectorAll('#displayGrade').forEach(el => el.innerText = `الصف: ${g}`);
         document.querySelectorAll('#displayDate').forEach(el => el.innerText = `التاريخ: ${d} / ${m} / ${y}هـ`);
         document.querySelectorAll('#displayDuration').forEach(el => el.innerText = `الزمن: ${dur} دقيقة`);
+        autoSave();
     }
 
     function addNewQuestion() {
@@ -467,13 +651,13 @@
                 <input type="file" id="${id}-imgInput" accept="image/*" style="display:none;" onchange="handleImageUpload(event, '${id}')">
             </td>
             <td rowspan="2" style="width:30px; border:none; text-align:center;">
+                <button class="btn-font-size" onclick="openFontSizeModal('${id}')" title="تغيير حجم الخط">🔤</button><br>
                 <button class="btn-del" onclick="document.getElementById('${id}-imgInput').click()" style="background:#e67e22; margin-bottom:5px;" title="إضافة صورة">📷</button><br>
-                <button class="btn-del" onclick="if(confirm('حذف هذا السؤال؟')) { document.getElementById('${id}').remove(); reorderAllQuestions(); }" title="حذف السؤال">✖</button>
+                <button class="btn-del" onclick="removeQuestion('${id}')" title="حذف السؤال">✖</button>
             </td></tr>
             <tr><td class="opt-char">أ</td><td class="opt-val" contenteditable="true"></td><td class="opt-char">ب</td><td class="opt-val" contenteditable="true"></td><td class="opt-char">ج</td><td class="opt-val" contenteditable="true"></td><td class="opt-char">د</td><td class="opt-val" contenteditable="true"></td></tr></table>`;
         container.insertAdjacentHTML('beforeend', html);
         
-        // فحص إذا امتلأت الصفحة
         setTimeout(() => {
             if (container.scrollHeight > container.clientHeight + 10) {
                 const lastQ = document.getElementById(id);
@@ -481,6 +665,7 @@
                 document.getElementById('qc' + currentPage).appendChild(lastQ);
                 updatePaginationInfo();
             }
+            autoSave();
         }, 100);
     }
 
@@ -491,9 +676,9 @@
         const id = 'q' + qCount;
         const html = `<div id="${id}" style="margin-bottom: 15px; page-break-inside: avoid;">
             <div style="display: flex; align-items: flex-start; gap: 10px;">
-                <div style="min-width: 35px; text-align: center; font-weight: bold; border: 1px solid #000; padding: 6px;">${toArabic(qCount)}</div>
+                <div class="q-num-essay" style="min-width: 35px; text-align: center; font-weight: bold; border: 1px solid #000; padding: 6px;">${toArabic(qCount)}</div>
                 <div style="flex: 1; border: 1px solid #000; padding: 10px;">
-                    <div contenteditable="true" style="margin-bottom: 10px; min-height: 25px;">اكتب السؤال المقالي هنا...</div>
+                    <div id="${id}-text" contenteditable="true" style="margin-bottom: 10px; min-height: 25px;">اكتب السؤال المقالي هنا...</div>
                     <div style="border-top: 1px solid #ccc; min-height: 100px; margin-top: 10px; padding-top: 10px;">
                         <div style="color: #999; font-size: 14px; text-align: center;">مساحة الإجابة</div>
                         <div style="margin-top: 20px; border-top: 1px dotted #ccc;"></div>
@@ -502,7 +687,8 @@
                     </div>
                 </div>
                 <div style="width: 30px; text-align: center;">
-                    <button class="btn-del" onclick="if(confirm('حذف هذا السؤال؟')) { document.getElementById('${id}').remove(); reorderAllQuestions(); }" title="حذف السؤال">✖</button>
+                    <button class="btn-font-size" onclick="openFontSizeModal('${id}')" title="تغيير حجم الخط">🔤</button><br>
+                    <button class="btn-del" onclick="removeQuestion('${id}')" title="حذف السؤال">✖</button>
                 </div>
             </div>
         </div>`;
@@ -515,6 +701,7 @@
                 document.getElementById('qc' + currentPage).appendChild(lastQ);
                 updatePaginationInfo();
             }
+            autoSave();
         }, 100);
     }
 
@@ -527,11 +714,12 @@
             <tr>
                 <td class="q-num" style="width: 35px; text-align: center; border: 1px solid #000;">${toArabic(qCount)}</td>
                 <td style="width: auto; text-align: right; padding: 10px; border: 1px solid #000;">
-                    <div contenteditable="true">اكتب السؤال هنا...</div>
+                    <div id="${id}-text" contenteditable="true">اكتب السؤال هنا...</div>
                 </td>
                 <td style="width: 80px; border: 1px solid #000; text-align: center;"></td>
                 <td style="width:30px; border:none; text-align:center;">
-                    <button class="btn-del" onclick="if(confirm('حذف هذا السؤال؟')) { document.getElementById('${id}').remove(); reorderAllQuestions(); }" title="حذف السؤال">✖</button>
+                    <button class="btn-font-size" onclick="openFontSizeModal('${id}')" title="تغيير حجم الخط">🔤</button><br>
+                    <button class="btn-del" onclick="removeQuestion('${id}')" title="حذف السؤال">✖</button>
                 </td>
             </tr>
         </table>`;
@@ -544,7 +732,37 @@
                 document.getElementById('qc' + currentPage).appendChild(lastQ);
                 updatePaginationInfo();
             }
+            autoSave();
         }, 100);
+    }
+
+    function openFontSizeModal(questionId) {
+        currentQuestionId = questionId;
+        const question = document.getElementById(questionId);
+        const currentSize = window.getComputedStyle(question).fontSize;
+        const sizeValue = parseInt(currentSize);
+        
+        document.getElementById('questionFontSlider').value = sizeValue;
+        document.getElementById('currentFontSize').innerText = sizeValue;
+        document.getElementById('fontSizeModal').style.display = 'block';
+    }
+
+    function updateQuestionFontPreview(value) {
+        document.getElementById('currentFontSize').innerText = value;
+        if (currentQuestionId) {
+            const question = document.getElementById(currentQuestionId);
+            question.style.fontSize = value + 'px';
+        }
+    }
+
+    function applyQuestionFontSize() {
+        autoSave();
+        closeFontSizeModal();
+    }
+
+    function closeFontSizeModal() {
+        document.getElementById('fontSizeModal').style.display = 'none';
+        currentQuestionId = null;
     }
 
     function addNewPage() {
@@ -562,6 +780,7 @@
         updatePaginationInfo();
         updateDeleteButtons();
         syncFields();
+        autoSave();
     }
 
     function deletePage(pageId) {
@@ -578,6 +797,7 @@
             reorderAllQuestions();
             updatePaginationInfo();
             updateDeleteButtons();
+            autoSave();
         }
     }
 
@@ -607,33 +827,25 @@
     function removeQuestion(id) { 
         if(confirm('هل تريد حذف هذا السؤال؟')) { 
             document.getElementById(id).remove(); 
-            reorderQuestions(); 
-            updatePaginationInfo(); 
+            reorderAllQuestions(); 
+            updatePaginationInfo();
+            autoSave();
         } 
     }
     
     function reorderAllQuestions() {
-        const allQuestions = document.querySelectorAll('.questions-table, [id^="q"]:not(.questions-table)');
-        allQuestions.forEach((q, i) => {
-            const qNum = q.querySelector('.q-num');
+        const allQuestions = document.querySelectorAll('.questions-table, [id^="q"]:not(.questions-table):not([id*="qc"])');
+        let newCount = 0;
+        
+        allQuestions.forEach((q) => {
+            newCount++;
+            const qNum = q.querySelector('.q-num, .q-num-essay');
             if (qNum) {
-                qNum.innerText = toArabic(i + 1);
-            } else {
-                const numDiv = q.querySelector('div[style*="min-width: 35px"]');
-                if (numDiv) {
-                    numDiv.innerText = toArabic(i + 1);
-                }
+                qNum.innerText = toArabic(newCount);
             }
         });
-        qCount = allQuestions.length;
-    }
-    
-    function reorderQuestions() { 
-        const qs = document.querySelectorAll('.questions-table'); 
-        qs.forEach((q, i) => { 
-            q.querySelector('.q-num').innerText = toArabic(i + 1); 
-        }); 
-        qCount = qs.length; 
+        
+        qCount = newCount;
     }
     
     function toArabic(num) { 
@@ -666,10 +878,11 @@
             qText.innerHTML += ` \\(${document.getElementById('math-input').value}\\) `;
             MathJax.typesetPromise([qText]); 
             closeMathModal();
+            autoSave();
         }
     }
 
-    // وظائف الصور - جديدة ومبسطة
+    // وظائف الصور
     let isDragging = false;
     let isResizing = false;
     let currentImg = null;
@@ -698,11 +911,12 @@
             
             qText.appendChild(imgWrapper);
             
-            // إضافة السحب والإفلات
             imgWrapper.addEventListener('mousedown', function(e) {
                 if (e.target.classList.contains('resize-handle') || e.target.classList.contains('img-delete-btn')) return;
                 startDrag(e, imgWrapper);
             });
+            
+            autoSave();
         };
         reader.readAsDataURL(file);
         event.target.value = '';
@@ -763,10 +977,12 @@
             currentImg.classList.remove('dragging');
             isDragging = false;
             currentImg = null;
+            autoSave();
         }
         if (isResizing) {
             isResizing = false;
             currentImg = null;
+            autoSave();
         }
     });
 
@@ -775,6 +991,7 @@
             const wrapper = document.getElementById(wrapperId);
             if (wrapper) {
                 wrapper.remove();
+                autoSave();
             }
         }
     }
@@ -794,7 +1011,6 @@
             textBox.style.top = y + 'px';
             textBox.innerHTML = 'اكتب هنا...';
             
-            // السحب والإفلات
             textBox.addEventListener('mousedown', function(e) {
                 if (e.target === textBox) {
                     let shiftX = e.clientX - textBox.getBoundingClientRect().left;
@@ -815,6 +1031,7 @@
                     textBox.onmouseup = function() {
                         document.removeEventListener('mousemove', onMouseMove);
                         textBox.onmouseup = null;
+                        autoSave();
                     };
                 }
             });
@@ -823,11 +1040,11 @@
                 return false;
             };
             
-            // حذف بالنقر على Delete
             textBox.addEventListener('keydown', function(e) {
                 if (e.key === 'Delete' && e.ctrlKey) {
                     if (confirm('حذف هذا المربع؟')) {
                         textBox.remove();
+                        autoSave();
                     }
                 }
             });
@@ -835,6 +1052,7 @@
             container.appendChild(textBox);
             textBox.focus();
             textBox.select();
+            autoSave();
         }
     }
 </script>
